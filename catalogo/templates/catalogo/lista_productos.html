@@ -1,0 +1,41 @@
+{% extends 'catalogo/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Catálogo de Productos</h2>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        
+        {% for producto in productos %}
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">{{ producto.nombre }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ producto.categoria.nombre }}</h6>
+                    <p class="card-text fs-5 fw-bold text-primary">${{ producto.precio }}</p>
+                </div>
+
+                <div class="card-footer bg-white border-0 text-center pb-3">
+                    {% if producto.estado_stock == 'Agotado' %}
+                        <span class="badge bg-danger w-100 py-2 mb-2">Agotado</span>
+                        <button class="btn btn-outline-secondary w-100" disabled>Sin Stock</button>
+                    {% elif producto.estado_stock == 'Crítico' %}
+                        <span class="badge bg-warning text-dark w-100 py-2 mb-2">Últimas {{ producto.stock_actual }} unidades</span>
+                        <button class="btn btn-primary w-100 btn-agregar" data-id="{{ producto.id }}">Agregar al Carro</button>
+                    {% else %}
+                        <span class="badge bg-success w-100 py-2 mb-2">Stock Disponible</span>
+                        <button class="btn btn-primary w-100 btn-agregar" data-id="{{ producto.id }}">Agregar al Carro</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center" role="alert">
+                Aún no hay productos disponibles en el catálogo.
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+{% endblock %}
