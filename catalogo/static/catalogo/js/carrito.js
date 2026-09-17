@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () =>{
                     // Manejo de quiebre.
                     const btnOriginal = this.innerText;
                     this.innerText = 'Stock Insuficiente';
-                    this.cassList.remove('btn-primary');
+                    this.classList.remove('btn-primary');
                     this.clasList.add('btn-danger');
 
                     // alerta al usuario
@@ -47,6 +47,94 @@ document.addEventListener('DOMContentLoaded', () =>{
                         this.classList.remove('btn-danger');
                         this.classList.add('btn-primary');
                     }, 2000);
+                }
+            });
+        });
+    });
+
+    // Lógica de los botones +/- del resumen del carrito
+    const botonesActualizar = document.querySelectorAll('.btn-actualizar');
+
+    botonesActualizar.forEach(boton => {
+        boton.addEventListener('click', function() {
+            const productoId= this.dataset.id;
+            const accion = this.dataset.accion;
+
+            fetch('/api/carrito/actualizar/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    'producto_id': productoId,
+                    'accion': accion
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'ok'){
+                    document.getElementById('contador-carrito').innerText = data.total_productos;
+
+                    if(data.nueva_cantidad === 0) {
+                        // Si la cantidad es 0, la fila desaparece con un efecto
+                        const fila = document.getElementById(`fila-${productoId}`);
+                        fila.style.transition = "opacity 0.3s";
+                        fila.style.opacity = "0";
+                        setTimeout(() => fila.remove(), 300);
+
+                        //Si el carro queda vacío, se recarga la página y muestra el mensaje personalizado
+                        if(data.total_productos === 0) {
+                            setTimeout(() => window.location.reload(), 350);
+                        }
+                    } else {
+                        // Si la cantidad no es 0, se actualizan los números en pantalla
+                        document.getElementById(`cantidad-${productoId}`).innerText = data.nueva_cantidad;
+                        document.getElementById(`subtotal-${productoId}`).innerText = data.nuevo_subtotal;
+                    }
+                    // Se actualiza el total de la cotización
+                    document.getElementById('total-cotizacion').innerText = data.total_cotizacion;
+
+                } else if(data.status === 'sin_stock') {
+                    alert(data.mensaje);
+                }
+            });
+        });
+    });
+
+    //Lógica para el botón eliminar
+    const botonesEliminar = document.querySelectorAll('.btn-eliminar');
+
+    botonesEliminar.forEach(boton => {
+        boton.addEventListener('click', function() {
+            const productoId = this.dataset.id;
+
+            fetch('/api/carrito/actualizar/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    'producto_id': productoId,
+                    'accion': 'eliminar'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'ok') {
+                    document.getElementById('contador-carrito').innerText = data.total_productos;
+
+                    const fila = document.getElementById(`fila-${productoId}`);
+                    fila.style.transition = "opacity 0.3s";
+                    fila.style.opacity = "0";
+                    setTimeout(() => fila.remove(), 300);
+                    
+                    if(data.total_productos === 0) {
+                        setTimeout(() => window.location.reload(), 350);
+                    } else {
+                        document.getElementById('total-cotizacion').innerText = data.total_cotizacion;
+                    }
                 }
             });
         });

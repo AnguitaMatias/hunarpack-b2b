@@ -62,3 +62,89 @@ def agregar_al_carrito(request):
         return JsonResponse({'status': 'ok', 'total_productos': total_productos})
 
     return JsonResponse({'status': 'error'}, status=400)
+
+# Logica para resumen del carro
+def resumen_carrito(request):
+    #Se obtiene el carro de la sesión, si no existe, se crea uno diccionario vacío
+    carrito = request.session.get('carrito', {})
+
+    #Guardamos los datos para enviarlos al template.
+    productos_carrito = []
+    total_cotizacion = 0
+    total_productos = sum(carrito.values())
+    #Iteracion sobre el carro temporal (producto_id: cantidad)
+    for producto_id, cantidad in carrito.items():
+        try:
+            #Se busca el item real en la bd.
+            producto = Producto.objects.get(id=producto_id)
+            subtotal = producto.precio * cantidad
+            total_cotizacion += subtotal
+
+            #Se arma un paquete con la info lista para la tabla (db).
+            productos_carrito.append({
+                'producto': producto,
+                'cantidad': cantidad,
+                'subtotal': subtotal
+            })
+        except Producto.DoesNotExist:
+            #Si el producto fue borrado de la BD mientras esta en el carro lo ignora.
+            pass
+
+    return render(request, 'catalogo/resumen_carrito.html', {
+        'productos_carrito': productos_carrito,
+        'total_cotizacion': total_cotizacion,
+        'total_productos': total_productos
+    })
+
+#API para actualizar el carrito
+def actualizar_carrito(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        producto_id = str(data.get('producto_id'))
+        accion = data.get('accion') # pudiendo ser sumar o restar del producto
+
+        try:
+            producto = Producto.objects.get(id=producto_id)
+        except Producto.DoesNotExist:
+            return JsonResponse({'status': 'error', 'mensaje': 'Producto no encontrado' })
+
+        carrito = request.session.get('carrito',{})
+
+        if producto_id in carrito:
+            if accion == 'sumar':
+                # Primero se comprueba que no supere el stock en bodega
+                if carrito[producto_id] + 1 > producto.stock_actual:
+                    return JsonResponse({'status': 'sin_stock', 'mensaje': f'Stock máximo alcanzado ({producto.stock_actual}).'})
+                carrito[producto_id] += 1
+
+            elif accion == 'restar':
+                if carrito[producto_id] > 1:
+                    carrito[producto_id] -= 1
+                else: #en caso de que tenga solo 1, se elimina del carro
+                    del carrito[producto_id]
+            elif accion == 'eliminar':
+                del carrito[producto_id]
+
+        request.session.modified = True
+
+        # Se calcula nuevamente los totatels para enviarlos actualizados al template.
+        total_productos = sum(carrito.values())
+        nueva_cantidad = carrito.get(producto_id, 0)
+        nuevo_subtotal = producto.precio * nueva_cantidad if nueva_cantidad > 0 else 0
+
+        total_cotizacion = 0
+        for pid, cant in carrito.items():
+            try:
+                p = Producto.objects.get(id=pid)
+                total_cotizacion += p.precio * cant
+            except Producto.DoesNotExist:
+                pass
+
+        return JsonResponse({
+            'status': 'ok',
+            'nueva_cantidad': nueva_cantidad,
+            'nuevo_subtotal': nuevo_subtotal,
+            'total_cotizacion': total_cotizacion,
+            'total_productos': total_productos
+        })
+    return JsonResponse({'status': 'error'}, status=400)

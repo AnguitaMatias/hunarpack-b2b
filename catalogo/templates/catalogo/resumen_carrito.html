@@ -1,0 +1,73 @@
+{% extends 'catalogo/base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h2 class="mb-4">Resumen de Cotización</h2>
+    <!-- Comprobación de productos en el carro -->
+    {% if productos_carrito %}
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Producto</th>
+                            <th class="text-center">Precio Unitario</th>
+                            <th class="text-center">Cantidad</th>
+                            <th class="text-end">Subtotal</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in productos_carrito %}
+                        <!--Se agerga ID a la fila completa-->
+                        <tr id="fila-{{ item.producto.id }}">
+                            <td class="align-middle">
+                                <h6 class="mb-0">{{ item.producto.nombre }}</h6>
+                                <small class="text-muted">{{ item.producto.categoria.nombre }}</small>
+                            </td>
+                            <td class="align-middle text-center">${{ item.producto.precio }}</td>
+                                <!--Botones (+/-)-->
+                            <td class="align-middle text-center">
+                                <div class="btn-group btn-group-sm shadow-sn" role="group">
+                                    <button type="button" class="btn btn-outline-secondary btn-actualizar" data-id="{{ item.producto.id }}" data-accion="restar">-</button>
+                                    <button type="button" class="btn btn-outline-secondary text-dark fw-bold px-3" disabled id="cantidad-{{ item.producto.id }}">{{ item.cantidad }}</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-actualizar" data-id="{{ item.producto.id }}" data-accion="sumar">+</button>
+                                </div>
+                            </td>
+                                <!--ID del subtotal-->
+                                <td class="align-middle text-end fw-bold">$<span id="subtotal-{{ item.producto.id }}">{{ item.subtotal }}</span></td>
+                            <td class="align-middle text-center">
+                                <!--Pendiente de hacer parte del crud (eliminar)-->
+                                <button class="btn btn-sm btn-outline-danger btn-eliminar" data-id="{{ item.producto.id }}">Eliminar</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="3" class="text-end fw-bold fs-5">Total Cotización:</td>
+                            <!--ID del total de la cotización-->
+                            <td class="text-end fw-bold fs-5 text-primary"><span id="total-cotizacion">{{ total_cotizacion }}</span></td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{% url 'lista_productos' %}" class="btn btn-outline-secondary">Volver al Catálogo</a>
+        <button class="btn btn-success btn-lg">Enviar Cotización</button>
+    </div>
+    {% else %}
+    <!--En caso de que el carro este vacío habrá una vista alternativa-->
+    <div class="alert alert-info text-center py-5 shadow-sm border-0" role="alert">
+        <h4 class="alert-heading mb-3">Tu carrito de cotización está vacío</h4>
+        <p>Aún no has agregado ninguno de nuestro productos.</p>
+        <a href="{% url 'lista_productos' %}" class="btn btn-primary mt-3">Ir al Catálogo</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

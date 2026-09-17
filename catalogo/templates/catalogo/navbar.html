@@ -3,12 +3,12 @@
         <a href="{% url 'lista_productos' %}" class="navbar-brand mb-0 h1">HunarPack B2B</a>
 
         <div class="d-flex align-items-center">
-            <button class="btn btn-outline-light position-relative">
+            <a href="{% url 'resumen_carrito' %}" class="btn btn-outline-light position-relative">
                 <i class="bi bi-cart3"></i> Carro
                 <span id="contador-carrito" class="position-absolute.top-0.start-100.translate-middle.badge.rounded-pill.bg-danger">
                     {{ total_productos|default:"0" }}
                 </span>
-            </button>
+            </a>
         </div>
     </div>
 </nav>
