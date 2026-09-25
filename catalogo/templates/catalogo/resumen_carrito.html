@@ -38,7 +38,6 @@
                                 <!--ID del subtotal-->
                                 <td class="align-middle text-end fw-bold">$<span id="subtotal-{{ item.producto.id }}">{{ item.subtotal }}</span></td>
                             <td class="align-middle text-center">
-                                <!--Pendiente de hacer parte del crud (eliminar)-->
                                 <button class="btn btn-sm btn-outline-danger btn-eliminar" data-id="{{ item.producto.id }}">Eliminar</button>
                             </td>
                         </tr>
@@ -59,7 +58,7 @@
 
     <div class="d-flex justify-content-between mt-4">
         <a href="{% url 'lista_productos' %}" class="btn btn-outline-secondary">Volver al Catálogo</a>
-        <button class="btn btn-success btn-lg">Enviar Cotización</button>
+        <button type="button" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#checkout">Enviar Cotización</button>
     </div>
     {% else %}
     <!--En caso de que el carro este vacío habrá una vista alternativa-->
@@ -70,4 +69,55 @@
     </div>
     {% endif %}
 </div>
+
+<!-- Modal para el Checkout -->
+ <div class="modal fade" id="checkout" tabindex="-1" aria-labelledby="checkoutLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="checkoutLabel">Datos de Contacto Comercial</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <!--Este form envía los datos a la visata de procesamiento de la cotizacion ('procesar_cotizacion')-->
+            <form action="{% url 'procesar_cotizacion' %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Razón Social / Empresa *</label>
+                            <input type="text" name="empresa" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">RUT Empresa</label>
+                            <input type="text" name="rut_empresa" class="form-control" placeholder="EJ: 76.543.210-K">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bolda">Nombre del Contacto *</label>
+                            <input type="text" name="nombre_contacto" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Teléfono *</label>
+                            <input type="text" name="telefono" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Correo Electrónico *</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Mensaje o Instrucciones Adicionales</label>
+                            <textarea name="mensaje" rows="3" class="form-control" placeholder="Ej: Necesito entrega en sucursal de Coquimbo..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light d-flex justify-content-between">
+                    <span class="fs-5 fw-bold text-primary">Total a Cotizar: ${{ total_cotizacion }}</span>
+                    <div>
+                        <button type="button" class="btn btn-secondary" data-bs--dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success px-4">Confirmar y Enviar Solicitud</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+ </div>
 {% endblock %}

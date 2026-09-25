@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Categoria, Producto
+from .models import Categoria, Producto, Cotizacion, DetalleCotizacion
 
 # Registro Categoría.
 admin.site.register(Categoria)
@@ -24,3 +24,19 @@ class ProductoAdmin(admin.ModelAdmin):
 
 # Registro Producto con la vista personalizada
 admin.site.register(Producto, ProductoAdmin)
+
+# Inline para ver los productos desde el /admin
+class DetalleCotizacionInline(admin.TabularInline):
+    model = DetalleCotizacion
+    extra = 0
+    readonly_fields = ('producto', 'precio_unitario', 'cantidad', 'subtotal')
+    can_delete = False
+
+@admin.register(Cotizacion)
+class CotizacionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'empresa', 'nombre_contacto', 'telefono', 'total', 'estado', 'fecha_creacion')
+    list_filter = ('estado', 'fecha_creacion')
+    search_fields = ('empresa', 'nombre_contacto', 'email', 'rut_empresa')
+    list_editable = ('estado',)
+    inlines = [DetalleCotizacionInline]
+    readonly_fields = ('fecha_creacion', 'total')

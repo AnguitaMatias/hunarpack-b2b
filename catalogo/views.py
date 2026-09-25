@@ -1,7 +1,8 @@
 import json
 from django.http import JsonResponse
-from django.shortcuts import render
-from .models import Producto
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Producto, Cotizacion, DetalleCotizacion
 
 # Vista de productos
 def lista_productos(request):
@@ -96,7 +97,7 @@ def resumen_carrito(request):
         'total_productos': total_productos
     })
 
-#API para actualizar el carrito
+# API para actualizar el carrito
 def actualizar_carrito(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -148,3 +149,70 @@ def actualizar_carrito(request):
             'total_productos': total_productos
         })
     return JsonResponse({'status': 'error'}, status=400)
+
+# Lógica para guardar y descontar stock
+def procesar_cotizacion(request):
+    if request.method == 'POST':
+        carrito = request.session.get('carrito', {})
+
+        # Se compurbea que no se mande un carro vacío por la URL
+        if not carrito:
+            messages.error(request, "Tu carrito está vacíp.")
+            return redirect('lista_productos')
+
+        # Paso 1. Se crea el registro maestro "La cotización"
+        cotizacion = Cotizacion.objects.create(
+            empresa=request.POST.get('empresa'),
+            rut_empresa=request.POST.get('rut_empresa'),
+            nombre_contacto=request.POST.get('nombre_contacto'),
+            telefono=request.POST.get('telefono'),
+            email=request.POST.get('email'),
+            mensaje=request.POST.get('mensaje')
+        )
+
+        total_cotizacion = 0
+
+        # Paso 2. Se intera sobre los items del carro para crear los "Detalles"
+        for producto_id, cantidad in carrito.items():
+            try:
+                producto = Producto.objects.get(id=producto_id)
+
+                # Comprobación del stock antes de confirmar en caso de que algun otro cliente 
+                # compró mientras llenaba el formulario
+                if cantidad > producto.stock_actual:
+                    messages.error(request, f"Los sentimos, no hay stock suficiente de {producto.nombre}")
+                    cotizacion.delete()
+                    return redirect('resumen_carrito')
+
+                subtotal = producto.precio * cantidad
+                total_cotizacion += subtotal
+
+                # Creación del detalle
+                DetalleCotizacion.objects.create(
+                    cotizacion=cotizacion,
+                    producto=producto,
+                    precio_unitario=producto.precio,
+                    cantidad=cantidad,
+                    subtotal=subtotal
+                )
+
+                # Paso 3. Regla Crítica: descontar el stock real de la bodega
+                producto.stock_actual -= cantidad
+                producto.save()
+
+            except Producto.DoesNotExist:
+                pass
+
+        # Paso 4. Actualizar el total en la cotización maestra
+        cotizacion.total = total_cotizacion
+        cotizacion.save()
+
+        # Paso 5. Vaciar (destruir) el carrito temporal de la sesión
+        del request.session['carrito']
+        request.session.modified = True
+
+        # Paso 6. Confirmar exito y redirigir a inicio (PROBAR ALGUNA PANTALLA DE "AGRADECIMIENTO" PENDIENTE)
+        messages.success(request, f"¡Su cotización se envió exitosamente! N° de Solicitud: {cotizacion.id}. Nos pondremos en contacto pronto.")
+        return redirect('lista_productos')
+
+    return redirect('lista_productos')
