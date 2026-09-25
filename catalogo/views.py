@@ -1,23 +1,45 @@
 import json
+from django.core.mail import send_mail
+from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .models import Producto, Cotizacion, DetalleCotizacion
+from django.db import transaction
+from django.db.models import Q
+from .models import Producto, Categoria, Cotizacion, DetalleCotizacion
 
 # Vista de productos
 def lista_productos(request):
-    #Se recuperan los productos de la bd de Supabase
+    # Se recuperan los productos de la bd
     productos = Producto.objects.all()
+    # Se recuperan las categorías para el menú
+    categorias = Categoria.objects.all()
 
-    #Se revisa el carro en la sesión, si no existe, se crea uno diccionario vacío
+    # Paso 1. Capturar lo que el usuario escribe en la URL (?q=caja&categoria=1)
+    query = request.GET.get('q')
+    categoria_id = request.GET.get('categoria')
+
+    # Paso 2. Se aplica los filtros a la bd en caso de que se haya buscado algo.
+    if categoria_id:
+        productos = productos.filter(categoria_id=categoria_id)
+
+    # Q permite la bsuqueda en el nombre y en la descripcion de manera simultanea
+    if query:
+        productos = productos.filter(Q(nombre__icontains=query) | Q(descripcion__icontains=query))
+
+    # Paso 3. Lógica del carrito        
+    # Se revisa el carro en la sesión, si no existe, se crea uno diccionario vacío
     carrito = request.session.get('carrito', {})
-    #Se calcula las cantidades de productos en el carro
+    # Se calcula las cantidades de productos en el carro
     total_productos = sum(carrito.values())
 
-    #Se rendenrizan en HTML
+    # Paso 4. Renderizado del html
     return render(request, 'catalogo/lista_productos.html', {
         'productos': productos,
-        'total_productos': total_productos
+        'categorias': categorias,
+        'total_productos': total_productos,
+        'query': query,
+        'categoria_id': str(categoria_id) if categoria_id else '',
     })
 
 # Logica para agregar al carro
@@ -125,6 +147,20 @@ def actualizar_carrito(request):
                     del carrito[producto_id]
             elif accion == 'eliminar':
                 del carrito[producto_id]
+            elif accion == 'fijar':
+                nueva_cant = int(data.get('cantidad', 1))
+
+                if nueva_cant > producto.stock_actual:
+                    return JsonResponse({
+                        'status': 'sin_stock',
+                        'mensaje': f'Solo tenemos {producto.stock_actual} unidades disponibles',
+                        'cantidad_corregida': carrito[producto_id] # se retorna el valor seguro anterior
+                    })
+                # Si ingresa 0 o menos se elimina
+                elif nueva_cant < 1:
+                    del carrito[producto_id]
+                else:
+                    carrito[producto_id] = nueva_cant
 
         request.session.modified = True
 
@@ -151,6 +187,7 @@ def actualizar_carrito(request):
     return JsonResponse({'status': 'error'}, status=400)
 
 # Lógica para guardar y descontar stock
+@transaction.atomic
 def procesar_cotizacion(request):
     if request.method == 'POST':
         carrito = request.session.get('carrito', {})
@@ -207,6 +244,33 @@ def procesar_cotizacion(request):
         cotizacion.total = total_cotizacion
         cotizacion.save()
 
+        # -- Envío del correo electronico -- (actualmente en desarrollo no olvidar)
+        asunto = F"Confirmación de Cotización #{cotizacion.id} - HunarPack B2B"
+        mensaje = f"""
+        Hola {cotizacion.nombre_contacto},
+
+        Hemos recibido tu solicitud de cotización para la empresa {cotizacion.empresa}.
+
+        Resumen de la solicitud:
+        - N° de Cotización: {cotizacion.id}
+        - Total Estimado: ${cotizacion.total}
+
+        Nuestro equipo de ventas revisará el inventario y se pondrá en contacto contigo a la brevedad.
+
+        Gracias por preferir HunarPack.        
+        """
+
+        #Función para le envío
+        #Asunto, mensaje texto, remitente, [destinatario]
+        send_mail(
+            asunto,
+            mensaje,
+            settings.DEFAULT_FROM_EMAIL,
+            [cotizacion.email],
+            fail_silently=False,
+        )
+        # -----------------------------------------------
+
         # Paso 5. Vaciar (destruir) el carrito temporal de la sesión
         del request.session['carrito']
         request.session.modified = True
@@ -216,3 +280,4 @@ def procesar_cotizacion(request):
         return redirect('lista_productos')
 
     return redirect('lista_productos')
+

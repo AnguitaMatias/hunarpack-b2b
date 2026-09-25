@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () =>{
                         }
                     } else {
                         // Si la cantidad no es 0, se actualizan los números en pantalla
-                        document.getElementById(`cantidad-${productoId}`).innerText = data.nueva_cantidad;
+                        document.getElementById(`cantidad-${productoId}`).value = data.nueva_cantidad;
                         document.getElementById(`subtotal-${productoId}`).innerText = data.nuevo_subtotal;
                     }
                     // Se actualiza el total de la cotización
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () =>{
         });
     });
 
-    //Lógica para el botón eliminar
+    // Lógica para el botón eliminar
     const botonesEliminar = document.querySelectorAll('.btn-eliminar');
 
     botonesEliminar.forEach(boton => {
@@ -135,6 +135,47 @@ document.addEventListener('DOMContentLoaded', () =>{
                     } else {
                         document.getElementById('total-cotizacion').innerText = data.total_cotizacion;
                     }
+                }
+            });
+        });
+    });
+
+    // Lógica para el input manual en la cantidad
+    const inputsCantidad = document.querySelectorAll('.input-cantidad');
+
+    inputsCantidad.forEach(input =>{
+        input.addEventListener('change', function () {
+            const productoId = this.dataset.id;
+            let nuevaCantidad = parseInt(this.value);
+
+            // se fuerza 1 en caso de que borre todo o ponga una letra
+            if (isNaN(nuevaCantidad) || nuevaCantidad < 1) {
+                nuevaCantidad = 1;
+                this.value = 1;
+            }
+
+            fetch('/api/carrito/actualizar/',{
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+
+                body: JSON.stringify({
+                    'producto_id': productoId,
+                    'accion': 'fijar',
+                    'cantidad': nuevaCantidad
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'ok') {
+                    document.getElementById('contador-carrito').innerText = data.total_productos;
+                    document.getElementById(`subtotal-${productoId}`).innerText = data.nuevo_subtotal;
+                    document.getElementById('total-cotizacion').innerText = data.total_cotizacion;
+                } else if (data.status === 'sin_stock') {
+                    alert(data.mensaje);
+                    this.value = data.cantidad_corregida;
                 }
             });
         });

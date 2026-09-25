@@ -3,8 +3,36 @@
 {% block content %}
 <div class="container">
     <h2 class="mb-4">Catálogo de Productos</h2>
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-        
+    <div class="row mb-4">
+        <!-- Formulario GET para enviar los parametros a la URL -->
+         <form action="" method="get" class="d-flex gap-2 shadow-sm p-3 bg-white rounded">
+
+            <!-- Selector de Categorias -->
+             <select name="categoria" class="form-select w-auto border-secondary" onchange="this.form.submit()">
+                <option value="">Todas las categorías</option>
+                {% for c in categorias %}
+                    <!-- Se usa el if para la mantención de la categoría luego de buscar -->
+                     <option value="{{ c.id }}" {% if categoria_id == c.id|stringformat:"s" %}selected{% endif %}>
+                        {{ c.nombre }}
+                     </option>
+                {% endfor %}
+             </select>
+
+             <!-- Input para la búsqueda -->
+              <div class="input-group">
+                <input type="text" name="q" class="form-control border secondary" placeholder="Buscar embalajes, cajas, cintas, etc..." value="{{ query|default_if_none:'' }}">
+                <button type="submit" class="btn btn-dark px-4">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+
+                <!-- Limpiar filtros si es que hay una búsqueda activa -->
+                {% if query or categoria_id %}
+                    <a href="{% url 'lista_productos' %}" class="btn btn-outline-danger">Limpiar</a>
+                {% endif %}
+              </div>
+         </form>
+    </div>
+    <div class="row row-cols-1 row-cols-md-3 g-4">       
         {% for producto in productos %}
         <div class="col">
             <div class="card h-100 shadow-sm border-0">

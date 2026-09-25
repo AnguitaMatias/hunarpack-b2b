@@ -31,7 +31,7 @@
                             <td class="align-middle text-center">
                                 <div class="btn-group btn-group-sm shadow-sn" role="group">
                                     <button type="button" class="btn btn-outline-secondary btn-actualizar" data-id="{{ item.producto.id }}" data-accion="restar">-</button>
-                                    <button type="button" class="btn btn-outline-secondary text-dark fw-bold px-3" disabled id="cantidad-{{ item.producto.id }}">{{ item.cantidad }}</button>
+                                    <input type="number" id="cantidad-{{ item.producto.id }}" class="form-control text-center input-cantidad mx-2" data-id="{{ item.producto.id }}" value="{{ item.cantidad }}" min="1" style="width: 70px; display: inline-block;">
                                     <button type="button" class="btn btn-outline-secondary btn-actualizar" data-id="{{ item.producto.id }}" data-accion="sumar">+</button>
                                 </div>
                             </td>

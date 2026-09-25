@@ -133,3 +133,6 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+# Config del correo para desarrollo
+DEFAULT_FROM_EMAIL = 'ventas@hunarpack.cl'
