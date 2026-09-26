@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cotización #{{ cotizacion.id }}</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 2cm;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #222;
+            padding-top: 10px;
+        }
+        .datos_cliente {
+            margin-bottom: 30px;
+        }
+        .datos_cliente p {
+            margin: 2px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+        .total-row {
+            font-weight: bold;
+            background-color: #eee;
+        }
+        .footer {
+            text-align: center;
+            font-size: 10px;
+            color: #777;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>HUNARPACK B2B</h1>
+        <h2>Documento de Cotización #{{ cotizacion.id }}</h2>
+        <p>Fecha: {{ cotizacion.fecha_creacion|date:"d M Y" }}</p>
+    </div>
+
+    <div class="datos-cliente">
+        <p><strong>Empresa :</strong>{{ cotizacion.empresa }}</p>
+        <p><strong>RUT :</strong>{{ cotizacion.rut_empresa|default:"No especificado" }}</p>
+        <p><strong>Contacto :</strong>{{ cotizacion.nombre_contacto }}</p>
+        <p><strong>Teléfono :</strong>{{ cotizacion.telefono }}</p>
+        <p><strong>Email :</strong>{{ cotizacion.email }}</p>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unit.</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detalle in cotizacion.detalles.all %}
+            <tr>
+                <td>{{ detalle.producto.nombre }}</td>
+                <td>{{ detalle.cantidad }}</td>
+                <td>{{ detalle.precio_unitario }}</td>
+                <td>{{ detalle.subtotal }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="total-row">
+                <td colspan="3" style="text-align: right;">TOTAL GENERAL:</td>
+                <td>${{ cotizacion.total }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    {% if cotizacion.mensaje %}
+    <div style="margin-top: 20px;">
+        <strong>Notas del cliente:</strong>
+        <p>{{ cotizacion.mensaje }}</p>
+    </div>
+    {% endif %}
+
+    <div class="footer">
+        Este documento es un resumen de la solicitud ingresa en la plataforma Hunarpack B2B. <br>
+        Valores sujetos a confirmación de inventario.
+    </div>
+</body>
+</html>

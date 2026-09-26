@@ -1,12 +1,15 @@
 import json
 from django.core.mail import send_mail
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import Q
 from .models import Producto, Categoria, Cotizacion, DetalleCotizacion
+from xhtml2pdf import pisa
+from django.template.loader import get_template
+from django.contrib.admin.views.decorators import staff_member_required
 
 # Vista de productos
 def lista_productos(request):
@@ -281,3 +284,28 @@ def procesar_cotizacion(request):
 
     return redirect('lista_productos')
 
+# Lógica para la generación del PDF (limitada solo al staff y admin)
+@staff_member_required
+def generar_pdf_cotizacion(request, cotizacion_id):
+    # Recuperamos la cotización del cliente desde la bd
+    try:
+        cotizacion = Cotizacion.objects.get(id=cotizacion_id)
+    except Cotizacion.DoesNotExist:
+        return HttpResponse("La cotización no existe.", status=404)
+
+    # Pasamos los datos de la cotización a la plantilla HTML
+    template = get_template('catalogo/pdf_cotizacion.html')
+    context = {'cotizacion': cotizacion}
+    html = template.render(context)
+
+    # La respuesta se prepara como un archivo PDF descargable
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Cotizacion_Hunarpack_{cotizacion.id}.pdf"'
+
+    # Se convierte el HTML a PDF
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse('Hubo un error al generar el PDF', status=500)
+
+    return response

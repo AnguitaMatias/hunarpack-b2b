@@ -7,4 +7,5 @@ urlpatterns = [
     path('carrito/', views.resumen_carrito, name='resumen_carrito'),
     path('api/carrito/actualizar/', views.actualizar_carrito, name='actualizar_carrito'),
     path('checkout/procesar/', views.procesar_cotizacion, name='procesar_cotizacion'),
+    path('cotizacion/<int:cotizacion_id>/pdf/', views.generar_pdf_cotizacion, name='generar_pdf_cotizacion'),
 ]
