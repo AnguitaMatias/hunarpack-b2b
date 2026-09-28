@@ -12,9 +12,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>Producto</th>
-                            <th class="text-center">Precio Unitario</th>
                             <th class="text-center">Cantidad</th>
-                            <th class="text-end">Subtotal</th>
                             <th class="text-center">Acciones</th>
                         </tr>
                     </thead>
@@ -26,7 +24,6 @@
                                 <h6 class="mb-0">{{ item.producto.nombre }}</h6>
                                 <small class="text-muted">{{ item.producto.categoria.nombre }}</small>
                             </td>
-                            <td class="align-middle text-center">${{ item.producto.precio }}</td>
                                 <!--Botones (+/-)-->
                             <td class="align-middle text-center">
                                 <div class="btn-group btn-group-sm shadow-sn" role="group">
@@ -35,22 +32,19 @@
                                     <button type="button" class="btn btn-outline-secondary btn-actualizar" data-id="{{ item.producto.id }}" data-accion="sumar">+</button>
                                 </div>
                             </td>
-                                <!--ID del subtotal-->
-                                <td class="align-middle text-end fw-bold">$<span id="subtotal-{{ item.producto.id }}">{{ item.subtotal }}</span></td>
                             <td class="align-middle text-center">
                                 <button class="btn btn-sm btn-outline-danger btn-eliminar" data-id="{{ item.producto.id }}">Eliminar</button>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
-                    <tfoot class="table-light">
+<!--                     <tfoot class="table-light">
                         <tr>
                             <td colspan="3" class="text-end fw-bold fs-5">Total Cotización:</td>
-                            <!--ID del total de la cotización-->
                             <td class="text-end fw-bold fs-5 text-primary"><span id="total-cotizacion">{{ total_cotizacion }}</span></td>
                             <td></td>
                         </tr>
-                    </tfoot>
+                    </tfoot>  -->
                 </table>
             </div>
         </div>
@@ -110,7 +104,6 @@
                     </div>
                 </div>
                 <div class="modal-footer bg-light d-flex justify-content-between">
-                    <span class="fs-5 fw-bold text-primary">Total a Cotizar: ${{ total_cotizacion }}</span>
                     <div>
                         <button type="button" class="btn btn-secondary" data-bs--dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-success px-4">Confirmar y Enviar Solicitud</button>

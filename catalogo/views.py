@@ -96,21 +96,16 @@ def resumen_carrito(request):
 
     #Guardamos los datos para enviarlos al template.
     productos_carrito = []
-    total_cotizacion = 0
     total_productos = sum(carrito.values())
     #Iteracion sobre el carro temporal (producto_id: cantidad)
     for producto_id, cantidad in carrito.items():
         try:
             #Se busca el item real en la bd.
             producto = Producto.objects.get(id=producto_id)
-            subtotal = producto.precio * cantidad
-            total_cotizacion += subtotal
-
             #Se arma un paquete con la info lista para la tabla (db).
             productos_carrito.append({
                 'producto': producto,
                 'cantidad': cantidad,
-                'subtotal': subtotal
             })
         except Producto.DoesNotExist:
             #Si el producto fue borrado de la BD mientras esta en el carro lo ignora.
@@ -118,7 +113,6 @@ def resumen_carrito(request):
 
     return render(request, 'catalogo/resumen_carrito.html', {
         'productos_carrito': productos_carrito,
-        'total_cotizacion': total_cotizacion,
         'total_productos': total_productos
     })
 
@@ -170,21 +164,11 @@ def actualizar_carrito(request):
         # Se calcula nuevamente los totatels para enviarlos actualizados al template.
         total_productos = sum(carrito.values())
         nueva_cantidad = carrito.get(producto_id, 0)
-        nuevo_subtotal = producto.precio * nueva_cantidad if nueva_cantidad > 0 else 0
 
-        total_cotizacion = 0
-        for pid, cant in carrito.items():
-            try:
-                p = Producto.objects.get(id=pid)
-                total_cotizacion += p.precio * cant
-            except Producto.DoesNotExist:
-                pass
 
         return JsonResponse({
             'status': 'ok',
             'nueva_cantidad': nueva_cantidad,
-            'nuevo_subtotal': nuevo_subtotal,
-            'total_cotizacion': total_cotizacion,
             'total_productos': total_productos
         })
     return JsonResponse({'status': 'error'}, status=400)
@@ -224,16 +208,13 @@ def procesar_cotizacion(request):
                     cotizacion.delete()
                     return redirect('resumen_carrito')
 
-                subtotal = producto.precio * cantidad
-                total_cotizacion += subtotal
-
                 # Creación del detalle
                 DetalleCotizacion.objects.create(
                     cotizacion=cotizacion,
                     producto=producto,
-                    precio_unitario=producto.precio,
+                    precio_unitario=0,
                     cantidad=cantidad,
-                    subtotal=subtotal
+                    subtotal=0
                 )
 
                 # Paso 3. Regla Crítica: descontar el stock real de la bodega
@@ -244,7 +225,7 @@ def procesar_cotizacion(request):
                 pass
 
         # Paso 4. Actualizar el total en la cotización maestra
-        cotizacion.total = total_cotizacion
+        cotizacion.total = 0
         cotizacion.save()
 
         # -- Envío del correo electronico -- (actualmente en desarrollo no olvidar)
@@ -256,7 +237,6 @@ def procesar_cotizacion(request):
 
         Resumen de la solicitud:
         - N° de Cotización: {cotizacion.id}
-        - Total Estimado: ${cotizacion.total}
 
         Nuestro equipo de ventas revisará el inventario y se pondrá en contacto contigo a la brevedad.
 

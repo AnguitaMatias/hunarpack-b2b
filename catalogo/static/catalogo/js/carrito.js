@@ -90,10 +90,10 @@ document.addEventListener('DOMContentLoaded', () =>{
                     } else {
                         // Si la cantidad no es 0, se actualizan los números en pantalla
                         document.getElementById(`cantidad-${productoId}`).value = data.nueva_cantidad;
-                        document.getElementById(`subtotal-${productoId}`).innerText = data.nuevo_subtotal;
+                        /* document.getElementById(`subtotal-${productoId}`).innerText = data.nuevo_subtotal; */
                     }
                     // Se actualiza el total de la cotización
-                    document.getElementById('total-cotizacion').innerText = data.total_cotizacion;
+                    /* document.getElementById('total-cotizacion').innerText = data.total_cotizacion; */
 
                 } else if(data.status === 'sin_stock') {
                     alert(data.mensaje);
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () =>{
                     if(data.total_productos === 0) {
                         setTimeout(() => window.location.reload(), 350);
                     } else {
-                        document.getElementById('total-cotizacion').innerText = data.total_cotizacion;
+                        /* document.getElementById('total-cotizacion').innerText = data.total_cotizacion; */
                     }
                 }
             });
@@ -171,8 +171,8 @@ document.addEventListener('DOMContentLoaded', () =>{
             .then(data => {
                 if(data.status === 'ok') {
                     document.getElementById('contador-carrito').innerText = data.total_productos;
-                    document.getElementById(`subtotal-${productoId}`).innerText = data.nuevo_subtotal;
-                    document.getElementById('total-cotizacion').innerText = data.total_cotizacion;
+                    /* document.getElementById(`subtotal-${productoId}`).innerText = data.nuevo_subtotal;
+                    document.getElementById('total-cotizacion').innerText = data.total_cotizacion; */
                 } else if (data.status === 'sin_stock') {
                     alert(data.mensaje);
                     this.value = data.cantidad_corregida;
