@@ -14,6 +14,18 @@
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">
 
+    <!-- Notificaciones en Toast para mejor aspecto -->
+     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+        <div id="sistemaToast" class="toast align-items-center text-white border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fw-bold" id="toastMensaje">
+                    <!-- Aquí se inyectará el texto dináminco usando JS -->
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+     </div>
+
     <!-- Navbar -->
     {% include 'catalogo/navbar.html' %}
 

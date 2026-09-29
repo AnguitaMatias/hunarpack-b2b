@@ -1,16 +1,43 @@
 /* Script para gestionar el carrito de compras */
 document.addEventListener('DOMContentLoaded', () =>{
-    const botonesAgregar = document.querySelectorAll('.btn-agregar');
+    // -- Función de las notificaciones (Toast) --
+    function mostrarToast(mensaje, tipo) {
+        const toastElement = document.getElementById('sistemaToast');
+        const toastMensaje = document.getElementById('toastMensaje');
 
+        // Se quita cualquier color previo.
+        toastElement.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'text-dark');
+
+        // Se asignarán colores de acuerdo al tipo de aviso
+        if(tipo === 'error') {
+            toastElement.classList.add('bg-danger');
+        } else if (tipo === 'exito') {
+            toastElement.classList.add('bg-success');
+        } else if (tipo === 'advertencia') {
+            toastElement.classList.add('bg-warning', 'text-dark');
+        }
+
+        // Se agrega el mensaje
+        toastMensaje.innerText = mensaje;
+
+        // Se lanza toast usando bootstrap (permanece durante 3 segundos)
+        const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+        toast.show();
+    }
+    const botonesAgregar = document.querySelectorAll('.btn-agregar');
     // Se lee el Token CSRF desde la etiqueta meta.
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
     // Se agrega un evento de clic a cada botón.
     botonesAgregar.forEach(boton =>{
         boton.addEventListener('click', function(){
             const productoId = this.dataset.id;
-
-            fetch('api/carrito/agregar/',{
+            const btnElement = this;
+            
+            const btnOriginal = btnElement.innerHTML;
+            btnElement.disabled = true;
+            btnElement.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Agregando...';
+            
+            fetch('/api/carrito/agregar/',{
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -21,33 +48,41 @@ document.addEventListener('DOMContentLoaded', () =>{
             .then(response => response.json())
             .then(data => {
                 if(data.status === 'ok') {
+                    // actualización del contador del carro
                     document.getElementById('contador-carrito').innerText = data.total_productos;
+                    // Animación de éxito.
+                    btnElement.innerHTML = '¡Agregago!';
+                    btnElement.classList.replace('btn-primary', 'btn-success');
+                    btnElement.disabled = false;
 
-                    const btnOriginal = this.innerText;
-                    this.innerText = '¡Agregado!';
-                    this.classList.replace('btn-primary', 'btn-success');
-
+                    // Restauración al estado original del botón.
                     setTimeout(() => {
-                        this.innerText = btnOriginal;
-                        this.classList.replace('btn-success', 'btn-primary');
+                        btnElement.innerHTML = btnOriginal;
+                        btnElement.classList.replace('btn-success', 'btn-primary');
                     },1000);
+
                 } else if (data.status === 'sin_stock') {
-                    // Manejo de quiebre.
-                    const btnOriginal = this.innerText;
-                    this.innerText = 'Stock Insuficiente';
-                    this.classList.remove('btn-primary');
-                    this.clasList.add('btn-danger');
+                    // Manejo de quiebre de stock.
+                    btnElement.innerHTML = 'Stock Insuficiente';
+                    btnElement.classList.remove('btn-primary');
+                    btnElement.classList.add('btn-danger');
+                    btnElement.disabled = false;
 
                     // alerta al usuario
-                    alert(data.mensaje);
+                    mostrarToast(data.mensaje, 'error');
 
                     // Restauramos el botón pasados 2 segundos
                     setTimeout(() =>{
-                        this.innerText = btnOriginal;
-                        this.classList.remove('btn-danger');
-                        this.classList.add('btn-primary');
+                        btnElement.innerHTML = btnOriginal;
+                        btnElement.classList.remove('btn-danger');
+                        btnElement.classList.add('btn-primary');
                     }, 2000);
                 }
+            })
+            .catch(error => {
+                // En caso de intermitencia de red, el botón vuelve al estado original
+                btnElement.disabled = false;
+                btnElement.innerHTML = btnOriginal
             });
         });
     });
@@ -96,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () =>{
                     /* document.getElementById('total-cotizacion').innerText = data.total_cotizacion; */
 
                 } else if(data.status === 'sin_stock') {
-                    alert(data.mensaje);
+                    mostrarToast(data.mensaje, 'error');
                 }
             });
         });
@@ -174,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () =>{
                     /* document.getElementById(`subtotal-${productoId}`).innerText = data.nuevo_subtotal;
                     document.getElementById('total-cotizacion').innerText = data.total_cotizacion; */
                 } else if (data.status === 'sin_stock') {
-                    alert(data.mensaje);
+                    mostrarToast(data.mensaje, 'error');
                     this.value = data.cantidad_corregida;
                 }
             });
