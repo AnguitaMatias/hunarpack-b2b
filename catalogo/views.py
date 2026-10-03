@@ -10,6 +10,9 @@ from .models import Producto, Categoria, Cotizacion, DetalleCotizacion
 from xhtml2pdf import pisa
 from django.template.loader import get_template
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout, login as auth_login
+from django.contrib.auth.forms import UserCreationForm
 
 # Vista de productos
 def lista_productos(request):
@@ -186,6 +189,7 @@ def procesar_cotizacion(request):
 
         # Paso 1. Se crea el registro maestro "La cotización"
         cotizacion = Cotizacion.objects.create(
+            usuario=request.user if request.user.is_authenticated else None,
             empresa=request.POST.get('empresa'),
             rut_empresa=request.POST.get('rut_empresa'),
             nombre_contacto=request.POST.get('nombre_contacto'),
@@ -259,7 +263,7 @@ def procesar_cotizacion(request):
         request.session.modified = True
 
         # Paso 6. Confirmar exito y redirigir a inicio (PROBAR ALGUNA PANTALLA DE "AGRADECIMIENTO" PENDIENTE)
-        messages.success(request, f"¡Su cotización se envió exitosamente! N° de Solicitud: {cotizacion.id}. Nos pondremos en contacto pronto.")
+        messages.success(request, f"¡Su cotización se envió exitosamente!. Nos pondremos en contacto pronto.")
         return redirect('lista_productos')
 
     return redirect('lista_productos')
@@ -289,3 +293,31 @@ def generar_pdf_cotizacion(request, cotizacion_id):
         return HttpResponse('Hubo un error al generar el PDF', status=500)
 
     return response
+
+# Ingreso del Cliente (Login)
+@login_required(login_url='/login/')
+def mi_historial(request):
+    # Se recuperan las id (cotizaciones) asociadas al usuario actua
+    cotizaciones = Cotizacion.objects.filter(usuario=request.user).order_by('-fecha_creacion')
+
+    return render(request, 'catalogo/mi_historial.html', {
+        'cotizaciones': cotizaciones
+    })
+
+def salir(request):
+    logout(request)
+    messages.success(request, "Has cerrado sesión exitosamente.")
+    return redirect('lista_productos')
+
+def registro(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            usuario = form.save()
+            auth_login(request, usuario) # Inicia sesión automáticamente después del registro.
+            messages.success(request, f"¡Te damos la bienvenida, {usuario.username}! Tu cuenta ha sido creada exitosamente.")
+            return redirect('lista_productos')
+    else:
+        form =UserCreationForm()
+
+    return render(request, 'catalogo/registro.html', {'form': form})

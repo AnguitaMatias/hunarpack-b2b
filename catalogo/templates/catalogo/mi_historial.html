@@ -1,0 +1,61 @@
+{% extends 'catalogo/base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark">Mi Historial de Solicitudes</h2>
+        <a href="{% url 'lista_productos' %}" class="btn btn-outline-dark">Volver al Catálogo</a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4 py-3">N° Solicitud</th>
+                            <th>Fecha</th>
+                            <th>Empresa</th>
+                            <th>Estado / Total</th>
+                            <th class="text-end pe-4">Documento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cotizacion in cotizaciones %}
+                        <tr>
+                            <td class="ps-4 fw-bold text-secondary">#{{ cotizacion.id }}</td>
+                            <td>{{ cotizacion.fecha_creacion|date:"d M Y" }}</td>
+                            <td>{{ cotizacion.empresa }}</td>
+                            <td class="fw-semibold">
+                                {% if cotizacion.total > 0 %}
+                                    <span class="text-success">${{ cotizacion.total }}</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark px-3 py-2">En revisión</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-4">
+                                {% if cotizacion.total > 0 %}
+                                    <a href="{% url 'generar_pdf_cotizacion' cotizacion.id %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-sm btn-light text-muted" disabled>Pendiente</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-3 text-light"></i>
+                                <h5>Aún no has realizado ninguna solicitud.</h5>
+                                <p>Tus cotizaciones guardadas aparecerán aquí.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

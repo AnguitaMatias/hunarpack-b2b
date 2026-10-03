@@ -110,7 +110,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-cl'
 
 TIME_ZONE = 'UTC'
 
@@ -136,3 +136,7 @@ MAILERS = {
 
 # Config del correo para desarrollo
 DEFAULT_FROM_EMAIL = 'ventas@hunarpack.cl'
+
+# Config para la autenticación de usuarios.
+LOGIN_REDIRECT_URL = 'lista_productos'
+LOGOUT_REDIRECT_URL = 'lista_productos'

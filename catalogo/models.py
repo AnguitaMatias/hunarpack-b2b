@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Categoria(models.Model):
     nombre = models.CharField(max_length=100, verbose_name="Nombre de la Categoría")
@@ -43,8 +44,9 @@ class Cotizacion(models.Model):
         ('FINALIZADA', 'Finalizada'),
     ]
 
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='cotizaciones')
     nombre_contacto = models.CharField(max_length=120, verbose_name="Nombre de Contacto")
-    empresa = models.CharField(max_length=120, verbose_name="Raz+on Social / Empresa")
+    empresa = models.CharField(max_length=150, verbose_name="Razón Social / Empresa")
     rut_empresa = models.CharField(max_length=15, blank=True, null=True, verbose_name="RUT Empresa")
     email = models.EmailField(verbose_name="Correo Electrónico")
     telefono = models.CharField(max_length=20, verbose_name="Teléfono")

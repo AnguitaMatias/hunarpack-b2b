@@ -24,6 +24,8 @@ document.addEventListener('DOMContentLoaded', () =>{
         const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
         toast.show();
     }
+
+    // -- Configuración del botón agregar --
     const botonesAgregar = document.querySelectorAll('.btn-agregar');
     // Se lee el Token CSRF desde la etiqueta meta.
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');

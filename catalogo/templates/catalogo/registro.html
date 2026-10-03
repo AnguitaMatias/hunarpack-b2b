@@ -1,0 +1,61 @@
+{% extends 'catalogo/base.html' %}
+
+{% block content %}
+    <style>
+        /*Estilos para que el form de django utilice el estilo de bootstrap*/
+        .django-form input {
+            display: block;
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #f8f9fa;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+        }
+        .django-form label {
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+        .django-form ul.errorlist {
+            color: #dc3545;
+            font-size: 0.875rem;
+            list-style-type: none;
+            padding-left: 0;
+            margin-top: -0.5rem;
+            margin-bottom: 1rem;
+        }
+        .django-form .helptext {
+            font-size: 0.8rem;
+            color: #6c757d;
+            display: block;
+            margin-top: -0.8rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+        <div class="card shadow-lg border-0" style="width: 100%; max-width: 450px;">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold text-dark">Registro de Usuario</h3>
+                    <p class="text-muted">Únete a la comunidad HunarPack B2B</p>
+                </div>
+            </div>
+
+            <form action="{% url 'registro' %}" method="POST" class="django-form">
+                {% csrf_token %}
+                {{ form.as_p}}
+                <button type="submit" class="btn-btn-dark w-100 fw-bold mt-2 mb-3">Registrarse</button>
+            </form>
+
+            <div class="text-center mt-3">
+                <small class="text-muted">¿Ya tienes una cuenta? <a href="{% url 'login' %}" class="text-dark fw-bold text-decoration-none">Inicia sesión</a></small>
+            </div>
+        </div>
+    </div>
+{% endblock %}

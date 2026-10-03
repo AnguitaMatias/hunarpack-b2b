@@ -2,13 +2,33 @@
     <div class="container">
         <a href="{% url 'lista_productos' %}" class="navbar-brand mb-0 h1">HunarPack B2B</a>
 
-        <div class="d-flex align-items-center">
+        <!-- Carrito -->
+        <div class="d-flex gap-3 align-items-center">
             <a href="{% url 'resumen_carrito' %}" class="btn btn-outline-light position-relative">
                 <i class="bi bi-cart3"></i> Carro
-                <span id="contador-carrito" class="position-absolute.top-0.start-100.translate-middle.badge.rounded-pill.bg-danger">
+                <span id="contador-carrito" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                     {{ total_productos|default:"0" }}
                 </span>
             </a>
         </div>
+
+        <!-- Menú de usuario -->
+        {% if user.is_authenticated %}
+            <div class="dropdown">
+                <button type="button" class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle"></i> {{ user.username }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a href="{% url 'mi_historial' %}" class="dropdown-item">Mi Historial</a></li>
+                    {% if user.is_staff %}
+                        <li><a href="/admin/" class="dropdown-item text-primary">Panel de Admin</a></li>
+                    {% endif %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a href="{% url 'logout' %}" class="dropdown-item text-danger">Cerrar Sesión</a></li>
+                </ul>
+            </div>
+        {% else %}
+            <a href="{% url 'login' %}" class="btn btn-outline-secondary">Ingresar</a>
+        {% endif %}
     </div>
 </nav>
