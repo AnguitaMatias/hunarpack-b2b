@@ -1,0 +1,57 @@
+{% extends 'catalogo/base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark">Fijar Precios - Solicitud #{{ cotizacion.id }}</h2>
+            <p class="text-muted mb-0">Cliente: <strong>{{ cotizacion.empresa }}</strong> | Contacto: {{ cotizacion.nombre_contacto }}</p>
+        </div>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Volver al Dashboard</a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Producto Solicitado</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-center" style="width: 150px;">Descuento (%)</th>
+                                <th class="text-end" style="width: 200px;">Precio Unitario Neto ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detalle in detalles %}
+                            <tr>
+                                <td class="fw-semibold">{{ detalle.producto.nombre }}</td>
+                                <td class="text-center">
+                                    <span class="badge bg-dark fs-6">{{ detalle.cantidad }} unid.</span>
+                                </td>
+                                <!-- Input descuento -->
+                                <td class="text-center">
+                                    <input type="number" name="descuento_{{ detalle.id }}" class="form-control text-center bg-light" min="0" max="100" value="0" placeholder="% (0 - 100)">
+                                </td>
+                                <!-- Input precio unitario -->                                
+                                <td class="text-end">
+                                    <input type="number" name="precio_{{ detalle.id }}" class="form-control text-end border-primary border-2 shadow-sm" required min="1" placeholder="Ej: 500">
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-4 bg-light p-3 rounded">
+                    <p class="text-muted mb-0 small"><i class="bi bi-info-circle"></i> Los subtotales y el total se calcularán automáticamente al guardar.</p>
+                    <button type="submit" class="btn btn-success px-5 fw-bold"><i class="bi bi-save"> Generar Cotización</i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

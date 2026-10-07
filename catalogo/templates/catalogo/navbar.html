@@ -21,7 +21,7 @@
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><a href="{% url 'mi_historial' %}" class="dropdown-item">Mi Historial</a></li>
                     {% if user.is_staff %}
-                        <li><a href="/admin/" class="dropdown-item text-primary">Panel de Admin</a></li>
+                        <li><a href="{% url 'dashboard' %}" class="dropdown-item text-primary fw-bold"> <i class="bi bi-speedometer2"></i> Dashboard de Gestión</a></li>
                     {% endif %}
                     <li><hr class="dropdown-divider"></li>
                     <li><a href="{% url 'logout' %}" class="dropdown-item text-danger">Cerrar Sesión</a></li>

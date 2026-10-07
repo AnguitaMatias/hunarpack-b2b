@@ -1,5 +1,7 @@
 <!DOCTYPE html>
+{% load filtros %}
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Cotización #{{ cotizacion.id }}</title>
@@ -8,100 +10,190 @@
             size: letter;
             margin: 2cm;
         }
+
         body {
             font-family: Arial, Helvetica, sans-serif;
             font-size: 12px;
             color: #333;
         }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #222;
-            padding-top: 10px;
-        }
-        .datos_cliente {
-            margin-bottom: 30px;
-        }
-        .datos_cliente p {
-            margin: 2px 0;
-        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
         }
-        th, td {
+
+        .header-table td {
+            vertical-align: top;
+            border: none;
+        }
+
+        .info-box {
             border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+        }
+
+        .info-box td {
+            padding: 4px;
+            border: none;
+            font-size: 11px;
+        }
+
+        .items-table th {
+            background-color: #2c3e50;
+            color: white;
             padding: 8px;
             text-align: left;
+            border: 1px solid #2c3e50;
+            font-size: 11px;
         }
-        th {
-            background-color: #f4f4f4;
-            font-weight: bold;
+
+        .items-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
         }
-        .total-row {
-            font-weight: bold;
-            background-color: #eee;
+
+        .totals-table {
+            width: 40%;
+            float: right;
+            margin-top: 20px;
         }
-        .footer {
+
+        .totals-table th,
+        .totals-table td {
+            padding: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .totals-table th {
+            background-color: #f0f0f0;
+            text-align: left;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
             text-align: center;
-            font-size: 10px;
-            color: #777;
-            margin-top: 50px;
+        }
+
+        .bold {
+            font-weight: bold;
         }
     </style>
 </head>
+
 <body>
+    <!-- Header logo/datos -->
+    <table class="header-table">
+        <tr>
+            <td style="width: 50%;">
+                <!-- placeholder para el logo -->
+                <h1 style="color: #2c3e50; margin: 0; font-size: 28px; text-transform: uppercase;">HUNARPACK</h1>
+                <p style="margin: 5px 0; color: #555;">
+                    Dirección Comercial 123<br>
+                    Coquimbo, Chile<br>
+                </p>
+            </td>
+            <td style="width: 50%; text-align: right;">
+                <h2 style="color: #2c3e50; margin: 0; font-size: 22px;">COTIZACIÓN N° {{ cotizacion.id }}</h2>
+                <p style="margin: 5px 0; font-size: 14px;">
+                    <strong>RUT:</strong> 76.XXX.XXX-X<br>
+                    <strong>Web:</strong> www.hunarpack.cl
+                </p>
+            </td>
+        </tr>
+    </table>
 
-    <div class="header">
-        <h1>HUNARPACK B2B</h1>
-        <h2>Documento de Cotización #{{ cotizacion.id }}</h2>
-        <p>Fecha: {{ cotizacion.fecha_creacion|date:"d M Y" }}</p>
+    <!-- Información solicitante y ejecutivo -->
+    <div class="info-box">
+        <table>
+            <tr>
+                <td class="bold" style="width: 15%;">Cliente:</td>
+                <td style="width: 35%;">{{ cotizacion.empresa }}</td>
+                <td class="bold" style="width: 15%;">Fecha Emisión:</td>
+                <td style="width: 35%;">{{ cotizacion.fecha_creacion|date:"d/m/Y" }}</td>
+            </tr>
+            <tr>
+                <td class="bold">RUT Cliente:</td>
+                <td>{{ cotizacion.rut_empresa|default:"No indicado" }}</td>
+                <td class="bold">Validez:</td>
+                <td>{{ cotizacion.dias_validez }} días</td>
+            </tr>
+            <tr>
+                <td class="bold">Contacto:</td>
+                <td>{{ cotizacion.nombre_contacto }}</td>
+                <td class="bold">Ejecutivo:</td>
+                <td>
+                    {% if cotizacion.ejecutivo %}
+                    {{ cotizacion.ejecutivo.first_name|default:cotizacion.ejecutivo.username }}
+                    {% else %}
+                    Ventas Web
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td class="bold">Teléfono:</td>
+                <td>{{ cotizacion.telefono }}</td>
+                <td class="bold">Email Ejecutivo:</td>
+                <td>{{ cotizacion.ejecutivo.email|default:"ventas@hunarpack.cl" }}</td>
+            </tr>
+
+            <tr>
+                <td class="bold">Email Cliente:</td>
+                <td>{{ cotizacion.email }}</td>
+                <td class="bold">País:</td>
+                <td>{{ cotizacion.pais }}</td>
+            </tr>
+        </table>
     </div>
 
-    <div class="datos-cliente">
-        <p><strong>Empresa :</strong>{{ cotizacion.empresa }}</p>
-        <p><strong>RUT :</strong>{{ cotizacion.rut_empresa|default:"No especificado" }}</p>
-        <p><strong>Contacto :</strong>{{ cotizacion.nombre_contacto }}</p>
-        <p><strong>Teléfono :</strong>{{ cotizacion.telefono }}</p>
-        <p><strong>Email :</strong>{{ cotizacion.email }}</p>
-    </div>
-    
-    <table>
+    <!-- Detalles de los productos -->
+    <table class="items-table">
         <thead>
             <tr>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Precio Unit.</th>
-                <th>Subtotal</th>
+                <th style="width: 45%;">Detalle</th>
+                <th style="width: 10%;" class="text-center">Cant.</th>
+                <th style="width: 15%;" class="text-right">Neto Unitario</th>
+                <th style="width: 10%;" class="text-center">% Dcto</th>
+                <th style="width: 20%;" class="text-right">Total Neto</th>
             </tr>
         </thead>
         <tbody>
             {% for detalle in cotizacion.detalles.all %}
             <tr>
                 <td>{{ detalle.producto.nombre }}</td>
-                <td>{{ detalle.cantidad }}</td>
-                <td>{{ detalle.precio_unitario }}</td>
-                <td>{{ detalle.subtotal }}</td>
+                <td class="text-center">{{ detalle.cantidad|peso }}</td>
+                <td class="text-right">${{ detalle.precio_unitario|peso }}</td>
+                <td class="text-center">{{ detalle.porcentaje_descuento|peso }}%</td>
+                <td class="text-right">${{ detalle.subtotal|peso }}</td>
             </tr>
             {% endfor %}
-            <tr class="total-row">
-                <td colspan="3" style="text-align: right;">TOTAL GENERAL:</td>
-                <td>${{ cotizacion.total }}</td>
-            </tr>
         </tbody>
     </table>
+    <!-- Resumen Totales -->
+    <table class="totals-table">
+        <tr>
+            <th>Dcto. Total Aplicado:</th>
+            <td class="text-right">${{ cotizacion.descuento_total|peso }}</td>
+        </tr>
+        <tr>
+            <th>Subtotal Neto:</th>
+            <td class="text-right">${{ cotizacion.subtotal_neto|peso }}</td>
+        </tr>
+        <tr>
+            <th>IVA (19%)</th>
+            <td class="text-right">${{ cotizacion.iva|peso }}</td>
+        </tr>
+        <tr>
+            <th style="background-color: #2c3e50; color: white;">TOTAL FINAL:</th>
+            <td class="text-right" style="font-weight: bold; font-size: 14px; background-color: #ecf0f1;">${{ cotizacion.total|peso }}</td>
+        </tr>
+    </table>
 
-    {% if cotizacion.mensaje %}
-    <div style="margin-top: 20px;">
-        <strong>Notas del cliente:</strong>
-        <p>{{ cotizacion.mensaje }}</p>
-    </div>
-    {% endif %}
-
-    <div class="footer">
-        Este documento es un resumen de la solicitud ingresa en la plataforma Hunarpack B2B. <br>
-        Valores sujetos a confirmación de inventario.
-    </div>
 </body>
+
 </html>

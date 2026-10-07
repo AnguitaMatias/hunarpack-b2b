@@ -19,5 +19,7 @@ urlpatterns = [
     path('mi-historial/', views.mi_historial, name='mi_historial'),
     path('registro/', views.registro, name='registro'),
 
-    #
+    # Panel Admin
+    path('panel/', views.dashboard, name='dashboard'),
+    path('panel/cotizacion/<int:cotizacion_id>/precios/', views.fijar_precios_cotizacion, name='fijar_precios'),
 ]

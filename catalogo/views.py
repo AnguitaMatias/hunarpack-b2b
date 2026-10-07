@@ -2,7 +2,7 @@ import json
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import JsonResponse, HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import Q
@@ -321,3 +321,66 @@ def registro(request):
         form =UserCreationForm()
 
     return render(request, 'catalogo/registro.html', {'form': form})
+
+# Dashboard administrativo (solo para staff)
+@staff_member_required(login_url='/login/')
+def dashboard(request):
+    cotizaciones_pendientes = Cotizacion.objects.filter(estado__in=['PENDIENTE', 'EN_REVISION']).order_by('-fecha_creacion')
+    cotizaciones_respondidas = Cotizacion.objects.filter(estado='RESPONDIDA').order_by('-fecha_creacion')
+
+    contexto = {
+        'pendientes': cotizaciones_pendientes,
+        'respondidas': cotizaciones_respondidas,
+        'total_pendientes': cotizaciones_pendientes.count(),
+    }
+
+    return render(request, 'catalogo/dashboard.html', contexto)
+
+@staff_member_required(login_url='/login/')
+def fijar_precios_cotizacion(request, cotizacion_id):
+    cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
+    detalles = cotizacion.detalles.all()
+
+    if request.method == 'POST':
+        subtotal_neto_general = 0
+        descuento_total_general = 0
+
+        for detalle in detalles:
+            precio_ingresado = request.POST.get(f'precio_{detalle.id}')
+            dcto_ingresado = request.POST.get(f'descuento_{detalle.id}', 0)
+
+            if precio_ingresado and precio_ingresado.isdigit():
+                precio_neto = int(precio_ingresado)
+                dcto_porcentaje = int(dcto_ingresado) if str(dcto_ingresado).isdigit() else 0
+
+                detalle.precio_unitario = precio_neto
+                detalle.porcentaje_descuento = dcto_porcentaje
+
+                subtotal_linea_bruto = precio_neto * detalle.cantidad
+                monto_descuento_linea = subtotal_linea_bruto * (dcto_porcentaje / 100)
+                subtotal_linea_neto = subtotal_linea_bruto - monto_descuento_linea
+
+                detalle.subtotal = int(subtotal_linea_neto)
+                detalle.save()
+
+                subtotal_neto_general += int(subtotal_linea_neto)
+                descuento_total_general += int(monto_descuento_linea)
+
+        # Calcylos globales de la cotización
+        cotizacion.subtotal_neto = subtotal_neto_general
+        cotizacion.descuento_total = descuento_total_general
+        cotizacion.iva = int(subtotal_neto_general * 0.19)
+        cotizacion.total = cotizacion.subtotal_neto + cotizacion.iva
+
+        # Se asigna a ejecutivo y cambiamos el estado
+        cotizacion.ejecutivo = request.user
+        cotizacion.estado = 'RESPONDIDA'
+        cotizacion.save()
+
+        messages.success(request, f"¡Precios fijados exitosamente! La cotización #{cotizacion.id} ahora incluye IVA y descuentos.")
+        return redirect('dashboard')
+
+    return render(request, 'catalogo/fijar_precios.html', {
+        'cotizacion': cotizacion,
+        'detalles': detalles
+    })
