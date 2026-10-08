@@ -1,0 +1,94 @@
+{% extends 'catalogo/base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark"><i class="bi bi-people"></i> Gestión de Staff</h2>
+            <p class="text-muted mb-0">Administración de accesos para ejecutivos de ventas.</p>
+        </div>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Volver al Panel</a>
+    </div>
+
+    <div class="row">
+        <!-- Formulario para la creación de usuarios staff -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0 fw bold"><i class="bi bi-person-plus"></i> Nuevo Ejecutivo</h5>
+                </div>
+                <div class="card-body bg-light">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="" class="form-label fw-bold small">Nombre de Usuario</label>
+                            <input type="text" name="username" class="form-control" required
+                                placeholder="Ej: m.huenchuleo">
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label class="form-label fw-bold small">Nombre</label>
+                                <input type="text" name="first_name" class="form-control" required>
+                            </div>
+                            <div class="col">
+                                <label class="form-label fw-bold small">Apellido</label>
+                                <input type="text" name="last_name" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Correo Electrónico</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small">Contraseña Temporal</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 fw-bold">Crear Cuenta Staff</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista del Staff existente -->
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-card-list"></i> Equipo Actual</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Usuario</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Rol</th>
+                                    <th>Último Acceso</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for integrante in equipo %}
+                                <tr>
+                                    <td class="ps-4 fw-bold text-secondary">{{ integrante.username }}</td>
+                                    <td>{{ integrante.first_name }} {{ integrante.last_name }}</td>
+                                    <td>
+                                        {% if integrante.is_superuser %}
+                                        <span class="badge bg-danger">Superadmin (Dueño)</span>
+                                        {% else %}
+                                        <span class="badge bg-primary">Ejecutivo de Ventas</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ integrante.last_login|date:"d M Y, H:i"|default:"Nunca" }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

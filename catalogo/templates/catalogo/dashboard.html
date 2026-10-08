@@ -8,7 +8,10 @@
             <h2 class="fw-bold text-dark"><i class="bi bi-speedometer2"></i>Dashboard de Gestión</h2>
             <p class="text-muted">Panel de gestión de ventas y cotizaciones B2B de HunarPack</p>
         </div>
-        <div class="col-md-4 text-end">
+        <div class="col-md-5 text-end">
+            {% if request.user.is_superuser %}
+            <a href="{% url 'gestion_personal' %}" class="btn btn-dark fw-bold me-2"> Gestión de Equipo</a>
+            {% endif %}
             <a href="{% url 'lista_productos' %}" class="btn btn-outline-secondary">Ir al Catálogo</a>
         </div>
     </div>

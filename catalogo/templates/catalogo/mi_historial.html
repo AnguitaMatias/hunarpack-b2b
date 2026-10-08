@@ -35,8 +35,11 @@
                             </td>
                             <td class="text-end pe-4">
                                 {% if cotizacion.total > 0 %}
-                                    <a href="{% url 'generar_pdf_cotizacion' cotizacion.id %}" class="btn btn-sm btn-outline-danger">
+                                    <a href="{% url 'generar_pdf_cotizacion' cotizacion.id %}" class="btn btn-sm btn-outline-danger" title="Descargar PDF">
                                         <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
+                                    </a>
+                                    <a href="{% url 'repetir_cotizacion' cotizacion.id %}" class="btn btn-sm-btn-outline-primary" title="Repetir este pedido">
+                                        <i class="bi bi-arrow-repeat"></i> Repetir
                                     </a>
                                 {% else %}
                                     <button class="btn btn-sm btn-light text-muted" disabled>Pendiente</button>

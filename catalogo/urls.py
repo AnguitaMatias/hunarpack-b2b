@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/carrito/actualizar/', views.actualizar_carrito, name='actualizar_carrito'),
     path('checkout/procesar/', views.procesar_cotizacion, name='procesar_cotizacion'),
     path('cotizacion/<int:cotizacion_id>/pdf/', views.generar_pdf_cotizacion, name='generar_pdf_cotizacion'),
+    path('cotizacion/repetir/<int:cotizacion_id>', views.repetir_cotizacion, name='repetir_cotizacion'),
     
     # Portal de clientes
     path('login/', auth_views.LoginView.as_view(template_name='catalogo/login.html'), name='login'),
@@ -22,4 +23,5 @@ urlpatterns = [
     # Panel Admin
     path('panel/', views.dashboard, name='dashboard'),
     path('panel/cotizacion/<int:cotizacion_id>/precios/', views.fijar_precios_cotizacion, name='fijar_precios'),
+    path('panel/personal/', views.gestion_personal, name='gestion_personal'),
 ]

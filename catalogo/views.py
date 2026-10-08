@@ -1,18 +1,19 @@
 import json
-from django.core.mail import send_mail
-from django.conf import settings
-from django.http import JsonResponse, HttpResponse
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.db import transaction
-from django.db.models import Q
 from .models import Producto, Categoria, Cotizacion, DetalleCotizacion
-from xhtml2pdf import pisa
-from django.template.loader import get_template
+from django.conf import settings
+from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import logout, login as auth_login
 from django.contrib.auth.forms import UserCreationForm
+from django.core.mail import send_mail
+from django.db import transaction
+from django.db.models import Q
+from django.http import JsonResponse, HttpResponse
+from django.template.loader import get_template
+from django.shortcuts import render, redirect, get_object_or_404
+from xhtml2pdf import pisa
 
 # Vista de productos
 def lista_productos(request):
@@ -175,6 +176,38 @@ def actualizar_carrito(request):
             'total_productos': total_productos
         })
     return JsonResponse({'status': 'error'}, status=400)
+
+# Lógica para repetir cotización antigua
+@login_required(login_url='/login/')
+def repetir_cotizacion(request, cotizacion_id):
+    # Se recupera la cotización antigua (comprobando que le pertenece al usuario)
+    cotizacion_antigua = get_object_or_404(Cotizacion, id=cotizacion_id, usuario=request.user)
+
+    # Se recupera el carro actual de la sesión (se creará si no existe)
+    carrito = request.session.get('carrito', {})
+
+    # Se vacía el carro actual para evitar errores
+    carrito.clear()
+
+    # Se itera sobre los productos de la cotización antigua y se pasan al carro actual.
+    for detalle in cotizacion_antigua.detalles.all():
+        producto_id = str(detalle.producto.id)
+        cantidad = detalle.cantidad
+
+        # Comprobamos stock
+        if cantidad > detalle.producto.stock_actual:
+            cantidad = detalle.producto.stock_actual
+
+        if cantidad > 0:
+            carrito[producto_id] = cantidad
+
+    # Se guarda el carro actual de la sesión.
+    request.session['carrito'] = carrito
+    request.session.modified = True
+
+    messages.success(request, f"¡Cotización #{cotizacion_antigua.id} clonada! Se han cargado los productos disponibles de esta a tu carrito.")
+
+    return redirect('resumen_carrito')
 
 # Lógica para guardar y descontar stock
 @transaction.atomic
@@ -384,3 +417,36 @@ def fijar_precios_cotizacion(request, cotizacion_id):
         'cotizacion': cotizacion,
         'detalles': detalles
     })
+
+# Gestión de personal (solo admin)
+def es_superadmin(user):
+    return user.is_superuser
+
+@user_passes_test(es_superadmin, login_url='/panel/')
+def gestion_personal(request):
+    if request.method == 'POST':
+        # Tomamos los datos del formulario
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        nombre = request.POST.get('first_name')
+        apellido = request.POST.get('last_name')
+        password = request.POST.get('password')
+
+        # Comprobamos que el usuario no exista ya.
+        if User.objects.filter(username=username).exists():
+            messages.error(request, f"El usuario '{username}' ya está registrado. Intente con otro.")
+        else:
+            # Creación del usuario
+            nuevo_staff = User.objects.create_user(username=username, email=email, password=password)
+            nuevo_staff.first_name = nombre
+            nuevo_staff.last_name = apellido
+            nuevo_staff.is_staff = True
+            nuevo_staff.save()
+            messages.success(request, f"Ejecutivo {nombre} {apellido} creado exitosamente.")
+        
+        return redirect('gestion_personal')
+
+    # Se recuperan todos los usuario que son staff (incluye al superadmin)
+    equipo = User.objects.filter(is_staff=True).order_by('-is_superuser', 'first_name')
+
+    return render(request, 'catalogo/gestion_personal.html', {'equipo': equipo})
