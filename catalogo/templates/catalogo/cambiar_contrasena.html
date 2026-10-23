@@ -1,0 +1,26 @@
+{% extends 'catalogo/base.html' %}
+
+{% block content %}
+<div class="container mt-5 mb-5" style="max-width: 500px">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white py-3">
+            <h4 class="mb-0 fw-bold"><i class="bi bi-key"></i> Cambiar Contraseña</h4>
+        </div>
+        <div class="card-body p-4 bg-light">
+            <p class="text-muted small mb-4"> Por seguridad, desbes ingresar tu contraseña actual y luego crea una nueva clave segura.</p>
+
+            <!-- Formulario para el cambio -->
+            <form method="POST">
+                {% csrf_token %}
+                <!-- Django utiliza su propios formularios que se rederizan de manera segura automáticamente -->
+                {{ form.as_p }}
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary fw-bold">Actualizar Contraseña</button>
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -19,6 +19,13 @@ urlpatterns = [
     path('logout/', views.salir, name='logout'),
     path('mi-historial/', views.mi_historial, name='mi_historial'),
     path('registro/', views.registro, name='registro'),
+    path('cuenta/cambiar-contrasena/', auth_views.PasswordChangeView.as_view(
+        template_name='catalogo/cambiar_contrasena.html',
+        success_url='/cuenta/contrasema-cambiada/'
+    ), name='cambiar_contrasena'),
+    path('cuenta/contrasena-cambiada/', auth_views.PasswordChangeDoneView.as_view(
+        template_name='catalogo/contrasena-cambiada.html'
+    ), name='password_change_done'),
 
     # Panel Admin
     path('panel/', views.dashboard, name='dashboard'),
