@@ -1,18 +1,20 @@
 import json
+from .forms import RegistroClienteForm
 from .models import Producto, Categoria, Cotizacion, DetalleCotizacion
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.models import User
 from django.contrib.auth import logout, login as auth_login
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.views import PasswordChangeView
 from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
-from django.template.loader import get_template
 from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import get_template
+from django.urls import reverse_lazy
 from xhtml2pdf import pisa
 
 # Vista de productos
@@ -344,14 +346,15 @@ def salir(request):
 
 def registro(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = RegistroClienteForm(request.POST)
         if form.is_valid():
             usuario = form.save()
             auth_login(request, usuario) # Inicia sesión automáticamente después del registro.
-            messages.success(request, f"¡Te damos la bienvenida, {usuario.username}! Tu cuenta ha sido creada exitosamente.")
+            nombre_bienvenida = usuario.first_name or usuario.username 
+            messages.success(request, f"¡Te damos la bienvenida, {nombre_bienvenida}! Tu cuenta ha sido creada exitosamente.")
             return redirect('lista_productos')
     else:
-        form =UserCreationForm()
+        form = RegistroClienteForm()
 
     return render(request, 'catalogo/registro.html', {'form': form})
 
@@ -450,3 +453,63 @@ def gestion_personal(request):
     equipo = User.objects.filter(is_staff=True).order_by('-is_superuser', 'first_name')
 
     return render(request, 'catalogo/gestion_personal.html', {'equipo': equipo})
+
+@user_passes_test(es_superadmin, login_url='/panel/')
+def editar_staff(request, user_id):
+    integrante = get_object_or_404(User, id=user_id, is_staff=True)
+
+    # Protección no permite editar el superusuario desde aquí
+    if integrante.is_superuser:
+        messages.error(request, "No puedes editar al superadministrador desde este panel.")
+        return redirect('gestion_personal')
+
+    if request.method == 'POST':
+        integrante.first_name = request.POST.get('first_name', integrante.first_name)
+        integrante.last_name = request.POST.get('last_name', integrante.last_name)
+        integrante.email = request.POST.get('email', integrante.email)
+
+        # Si se cambia la contraseña se resetea.
+        nueva_password = request.POST.get('password')
+        if nueva_password:
+            integrante.set_password(nueva_password)
+            messages.info(request, "La contraseña fue reseteada con éxito.")
+
+        integrante.save()
+        messages.success(request, f"Datos de {integrante.username} actualizados correctamente.")
+
+        return redirect('gestion_personal')
+
+    return render(request, 'catalogo/editar_staff.html', {'integrante': integrante})
+
+@user_passes_test(es_superadmin, login_url='/panel/')
+def eliminar_staff(request, user_id):
+    # Por seguridad solo se reciben POST asi se evitan borrados vía URL
+    if request.method != 'POST':
+        return redirect('gestion_personal')
+
+    integrante = get_object_or_404(User, id=user_id, is_staff=True)
+
+    # Medidas de seguridad y protecciones críticas
+    if integrante.is_superuser:
+        messages.error(request, "No puedes eliminar al superadministrador.")
+        return redirect('gestion_personal')
+
+    if integrante == request.user:
+        messages.error(request, "No peudes eliminar tu propia cuenta.")
+        return redirect('gestion_personal')
+
+    nombre = integrante.get_full_name() or integrante.username
+    integrante.delete()
+    messages.success(request, f"El ejecutivo {nombre} ha sido eliminado del equipo.")
+    return redirect('gestion_personal')
+
+# Cambio de contraseña para todo usuario.
+class CambiarContrasena(PasswordChangeView):
+    template_name = 'catalogo/cambiar_contrasena.html'
+    success_url = reverse_lazy('lista_productos')
+
+    def form_valid(self, form):
+        messages.success(self.request, "¡Tu contraseña ha sido actualizada exitosamente!")
+
+        return super().form_valid(form)
+

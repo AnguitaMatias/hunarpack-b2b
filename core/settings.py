@@ -32,11 +32,11 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = True
 
 # MODIFICADO PARA LA PRESENTACIÓN
-ALLOWED_HOSTS = ['*'] #BORRAR ESTO CUANDO VUELVA
-CSRF_TRUSTED_ORIGINS = [
-    'https://*.ngrok-free.dev',
-    'https://*.ngrok-free.app'
-]
+# ALLOWED_HOSTS = ['*'] #BORRAR ESTO CUANDO VUELVA
+#CSRF_TRUSTED_ORIGINS = [
+#    'https://*.ngrok-free.dev',
+#    'https://*.ngrok-free.app'
+#]
 
 # Application definition
 
@@ -135,16 +135,31 @@ STATIC_URL = 'static/'
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
+if os.environ.get('EMAIL_USE_REAL_SMTP') == 'True':
+    # Producción / Pruebas reales: envío por SMTP
+    MAILERS = {
+        'default': {
+            'BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
+            'OPTIONS': {
+                'host': 'smtp.gmail.com',
+                'port': 587,
+                'username': os.environ.get('EMAIL_HOST_USER'),
+                'password': os.environ.get('EMAIL_HOST_PASSWORD'),
+                'use_tls':  True,
+            },
+        },
+    }
+else:
+    # Config del correo para desarrollo
+    MAILERS = {
+        'default': {
+            'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+        },
+    }
 
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
-
-# Config del correo para desarrollo
-DEFAULT_FROM_EMAIL = 'ventas@hunarpack.cl'
+DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'ventas@hunarpack.cl')
 
 # Config para la autenticación de usuarios.
+LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = 'lista_productos'
 LOGOUT_REDIRECT_URL = 'lista_productos'

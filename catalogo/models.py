@@ -11,7 +11,6 @@ class Categoria(models.Model):
         verbose_name = "Categoría"
         verbose_name_plural = "Categorías"
 
-
 class Producto(models.Model):
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, related_name='productos')
     nombre = models.CharField(max_length=200, verbose_name="Nombre del Producto")

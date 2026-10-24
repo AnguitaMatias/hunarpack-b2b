@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, reverse_lazy
 from django.contrib.auth import views as auth_views
 from . import views
 
@@ -19,16 +19,30 @@ urlpatterns = [
     path('logout/', views.salir, name='logout'),
     path('mi-historial/', views.mi_historial, name='mi_historial'),
     path('registro/', views.registro, name='registro'),
-    path('cuenta/cambiar-contrasena/', auth_views.PasswordChangeView.as_view(
-        template_name='catalogo/cambiar_contrasena.html',
-        success_url='/cuenta/contrasema-cambiada/'
-    ), name='cambiar_contrasena'),
-    path('cuenta/contrasena-cambiada/', auth_views.PasswordChangeDoneView.as_view(
-        template_name='catalogo/contrasena-cambiada.html'
-    ), name='password_change_done'),
+    path('cambiar-clave/', views.CambiarContrasena.as_view(), name='cambiar_clave'),
+
+    # Flujo para recuperación de contraseñas olvidadas (Exclusivo clientes)
+    path('reiniciar-password/', auth_views.PasswordResetView.as_view(
+        template_name='catalogo/password_reset_form.html',
+        email_template_name='catalogo/password_reset_email.html',
+        subject_template_name='catalogo/password_reset_subject.txt',
+        success_url=reverse_lazy('password_reset_done')
+    ), name='password_reset'),
+    path('reiniciar-password/enviado/', auth_views.PasswordResetDoneView.as_view(
+        template_name='catalogo/password_reset_done.html'
+    ), name='password_reset_done'),
+    path('reiniciar/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
+        template_name='catalogo/password_reset_confirm.html',
+        success_url=reverse_lazy('password_reset_complete')
+    ), name='password_reset_confirm'),
+    path('reiniciar/completado/', auth_views.PasswordResetCompleteView.as_view(
+        template_name='catalogo/password_reset_complete.html'
+    ), name='password_reset_complete'),
 
     # Panel Admin
     path('panel/', views.dashboard, name='dashboard'),
     path('panel/cotizacion/<int:cotizacion_id>/precios/', views.fijar_precios_cotizacion, name='fijar_precios'),
     path('panel/personal/', views.gestion_personal, name='gestion_personal'),
+    path('panel/personal/editar/<int:user_id>/', views.editar_staff, name='editar_staff'),
+    path('panel/personal/eliminar/<int:user_id>/', views.eliminar_staff, name='eliminar_staff'),
 ]
