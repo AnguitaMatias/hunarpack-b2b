@@ -1,4 +1,4 @@
-{% extends 'catalogo/base.html' %}
+{% extends 'catalogo/components/base.html' %}
 
 {% block content %}
 <div class="container mt-4 mb-5">
@@ -69,6 +69,35 @@
                                 <a href="{% url 'fijar_precios' c.id %}" class="btn btn-sm btn-primary fw-bold">
                                     <i class="bi bi-pencil-square"></i> Fijar Precios
                                 </a>
+                                <button type="button" class="btn btn-sm btn-danger fw-bold ms-1" title="Eliminar solicitud" data-bs-toggle="modal" data-bs-target="#modalEliminarCotizacion{{ c.id }}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+
+                                <!-- Modal de confirmación -->
+                                <div class="modal fade" id="modalEliminarCotizacion{{ c.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content text-start">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title"><i class="bi bi-exclamarion-triangle"> Confirmar Eliminación</i></h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                ¿Estás seguro de eliminar la solicitud <strong>#{{ c.id }}</strong> de la empresa <strong>{{ c.empresa }}</strong>?
+                                                <br><br>
+                                                <div class="alert alert-warning mb-0 small">
+                                                    <i class="bi bi-info-circle"></i> <strong>Importante:</strong> Al eliminar esta solicitud, el stock de los productos involucrados será devuelto automáticamente a la bodega.
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <form method="POST" action="{% url 'eliminar_cotizacion' c.id %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-danger">Sí, Eliminar y Restaurar Stock</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                         {% empty %}

@@ -45,7 +45,7 @@ def lista_productos(request):
     total_productos = sum(carrito.values())
 
     # Paso 4. Renderizado del html
-    return render(request, 'catalogo/lista_productos.html', {
+    return render(request, 'catalogo/client/lista_productos.html', {
         'productos': productos,
         'categorias': categorias,
         'total_productos': total_productos,
@@ -119,7 +119,7 @@ def resumen_carrito(request):
             #Si el producto fue borrado de la BD mientras esta en el carro lo ignora.
             pass
 
-    return render(request, 'catalogo/resumen_carrito.html', {
+    return render(request, 'catalogo/client/resumen_carrito.html', {
         'productos_carrito': productos_carrito,
         'total_productos': total_productos
     })
@@ -352,7 +352,7 @@ def generar_pdf_cotizacion(request, cotizacion_id):
         return HttpResponse("La cotización no existe.", status=404)
 
     # Pasamos los datos de la cotización a la plantilla HTML
-    template = get_template('catalogo/pdf_cotizacion.html')
+    template = get_template('catalogo/pdf/pdf_cotizacion.html')
     context = {'cotizacion': cotizacion}
     html = template.render(context)
 
@@ -374,7 +374,7 @@ def mi_historial(request):
     # Se recuperan las id (cotizaciones) asociadas al usuario actua
     cotizaciones = Cotizacion.objects.filter(usuario=request.user).order_by('-fecha_creacion')
 
-    return render(request, 'catalogo/mi_historial.html', {
+    return render(request, 'catalogo/client/mi_historial.html', {
         'cotizaciones': cotizaciones
     })
 
@@ -395,7 +395,7 @@ def registro(request):
     else:
         form = RegistroClienteForm()
 
-    return render(request, 'catalogo/registro.html', {'form': form})
+    return render(request, 'catalogo/auth/registro.html', {'form': form})
 
 # Dashboard administrativo (solo para staff)
 @staff_member_required(login_url='/login/')
@@ -409,7 +409,7 @@ def dashboard(request):
         'total_pendientes': cotizaciones_pendientes.count(),
     }
 
-    return render(request, 'catalogo/dashboard.html', contexto)
+    return render(request, 'catalogo/admin_panel/dashboard.html', contexto)
 
 @staff_member_required(login_url='/login/')
 def fijar_precios_cotizacion(request, cotizacion_id):
@@ -456,7 +456,7 @@ def fijar_precios_cotizacion(request, cotizacion_id):
         #-------------------------------------
 
         # Paso 1. Renderizado en HTML del PDF
-        template = get_template('catalogo/pdf_cotizacion.html')
+        template = get_template('catalogo/pdf/pdf_cotizacion.html')
         html = template.render({'cotizacion': cotizacion})
 
         # Paso 2. Se crea un buffer de memoria para el PDF
@@ -501,12 +501,37 @@ Gracias por preferir HunarPack.
         messages.success(request, f"¡Cotización #{cotizacion.id} respondida y enviada al cliente por correo!")
         return redirect('dashboard')
 
-    return render(request, 'catalogo/fijar_precios.html', {
+    return render(request, 'catalogo/admin_panel/fijar_precios.html', {
         'cotizacion': cotizacion,
         'detalles': detalles
     })
 
-# Gestión de personal (solo admin)
+@staff_member_required(login_url='/login/')
+def eliminar_cotizacion(request, cotizacion_id):
+    if request.method != 'POST':
+        return redirect('dashboard')
+
+    cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
+
+    # Solo se podrá eliminar si esta figura como Pendiente.
+    if cotizacion.estado != 'PENDIENTE':
+        messages.error(request, "Solo se pueden eliminar cotizaciones Pendientes.")
+        return redirect('dashboard')
+
+    with transaction.atomic():
+        # Paso 1. Se devuelve el stock al inventario
+        for detalle in cotizacion.detalles.all():
+            producto = detalle.producto
+            producto.stock_actual += detalle.cantidad
+            producto.save()
+
+        # Paso 2. Eliminar la cotización (incluido el detalle)
+        cotizacion.delete()
+
+    messages.success(request, f"La cotizacion #{cotizacion.id} fue eliminada y el stock devuelto a bodega.")
+    return redirect('dashboard')
+
+# Funciones exclusivas para el admin
 def es_superadmin(user):
     return user.is_superuser
 
@@ -537,7 +562,7 @@ def gestion_personal(request):
     # Se recuperan todos los usuario que son staff (incluye al superadmin)
     equipo = User.objects.filter(is_staff=True).order_by('-is_superuser', 'first_name')
 
-    return render(request, 'catalogo/gestion_personal.html', {'equipo': equipo})
+    return render(request, 'catalogo/admin_panel/gestion_personal.html', {'equipo': equipo})
 
 @user_passes_test(es_superadmin, login_url='/panel/')
 def editar_staff(request, user_id):
@@ -564,7 +589,7 @@ def editar_staff(request, user_id):
 
         return redirect('gestion_personal')
 
-    return render(request, 'catalogo/editar_staff.html', {'integrante': integrante})
+    return render(request, 'catalogo/admin_panel/editar_staff.html', {'integrante': integrante})
 
 @user_passes_test(es_superadmin, login_url='/panel/')
 def eliminar_staff(request, user_id):
@@ -631,9 +656,10 @@ def simular_cotizacion(request):
         f"Cotización simulada #{cotizacion.id} creada con {cantidad_productos} productos. Revisa la bandeja de pendientes."
     )
     return redirect('dashboard')
+
 # Cambio de contraseña para todo usuario.
 class CambiarContrasena(PasswordChangeView):
-    template_name = 'catalogo/cambiar_contrasena.html'
+    template_name = 'catalogo/auth/cambiar_contrasena.html'
     success_url = reverse_lazy('lista_productos')
 
     def form_valid(self, form):

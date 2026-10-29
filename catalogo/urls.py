@@ -15,7 +15,7 @@ urlpatterns = [
     path('cotizacion/repetir/<int:cotizacion_id>', views.repetir_cotizacion, name='repetir_cotizacion'),
     
     # Portal de clientes
-    path('login/', auth_views.LoginView.as_view(template_name='catalogo/login.html'), name='login'),
+    path('login/', auth_views.LoginView.as_view(template_name='catalogo/auth/login.html'), name='login'),
     path('logout/', views.salir, name='logout'),
     path('mi-historial/', views.mi_historial, name='mi_historial'),
     path('registro/', views.registro, name='registro'),
@@ -23,20 +23,20 @@ urlpatterns = [
 
     # Flujo para recuperación de contraseñas olvidadas (Exclusivo clientes)
     path('reiniciar-password/', auth_views.PasswordResetView.as_view(
-        template_name='catalogo/password_reset_form.html',
+        template_name='catalogo/auth/password_reset_form.html',
         email_template_name='catalogo/password_reset_email.html',
         subject_template_name='catalogo/password_reset_subject.txt',
         success_url=reverse_lazy('password_reset_done')
     ), name='password_reset'),
     path('reiniciar-password/enviado/', auth_views.PasswordResetDoneView.as_view(
-        template_name='catalogo/password_reset_done.html'
+        template_name='catalogo/auth/password_reset_done.html'
     ), name='password_reset_done'),
     path('reiniciar/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
-        template_name='catalogo/password_reset_confirm.html',
+        template_name='catalogo/auth/password_reset_confirm.html',
         success_url=reverse_lazy('password_reset_complete')
     ), name='password_reset_confirm'),
     path('reiniciar/completado/', auth_views.PasswordResetCompleteView.as_view(
-        template_name='catalogo/password_reset_complete.html'
+        template_name='catalogo/auth/password_reset_complete.html'
     ), name='password_reset_complete'),
 
     # Panel Admin
@@ -46,4 +46,5 @@ urlpatterns = [
     path('panel/personal/editar/<int:user_id>/', views.editar_staff, name='editar_staff'),
     path('panel/personal/eliminar/<int:user_id>/', views.eliminar_staff, name='eliminar_staff'),
     path('panel/simular/', views.simular_cotizacion, name='simular_cotizacion'),
+    path('panel/cotizacion/<int:cotizacion_id>/eliminar/', views.eliminar_cotizacion, name='eliminar_cotizacion'),
 ]
