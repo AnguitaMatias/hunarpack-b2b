@@ -1,4 +1,6 @@
 import json
+import io
+import random
 from .forms import RegistroClienteForm
 from .models import Producto, Categoria, Cotizacion, DetalleCotizacion
 from django.conf import settings
@@ -8,7 +10,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.contrib.auth import logout, login as auth_login
 from django.contrib.auth.views import PasswordChangeView
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
 from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
@@ -219,7 +221,7 @@ def procesar_cotizacion(request):
 
         # Se compurbea que no se mande un carro vacío por la URL
         if not carrito:
-            messages.error(request, "Tu carrito está vacíp.")
+            messages.error(request, "Tu carrito está vacío.")
             return redirect('lista_productos')
 
         # Paso 1. Se crea el registro maestro "La cotización"
@@ -267,7 +269,7 @@ def procesar_cotizacion(request):
         cotizacion.total = 0
         cotizacion.save()
 
-        # -- Envío del correo electronico -- (actualmente en desarrollo no olvidar)
+        # -- Envío del correo electronico --
         asunto = F"Confirmación de Cotización #{cotizacion.id} - HunarPack B2B"
         mensaje = f"""
         Hola {cotizacion.nombre_contacto},
@@ -282,7 +284,7 @@ def procesar_cotizacion(request):
         Gracias por preferir HunarPack.        
         """
 
-        #Función para le envío
+        #Función para le envío y notificación el cliente
         #Asunto, mensaje texto, remitente, [destinatario]
         send_mail(
             asunto,
@@ -291,13 +293,50 @@ def procesar_cotizacion(request):
             [cotizacion.email],
             fail_silently=False,
         )
+
+        # Notificación al staff
+        staff_emails = list(
+            User.objects.filter(is_staff=True, is_active=True)
+            .exclude(email='')
+            .values_list('email', flat=True)
+        )
+
+        if staff_emails:
+            panel_url = request.build_absolute_uri('/panel/')
+            asunto_staff = f"Nueva Solicitud #{cotizacion.id} - {cotizacion.empresa}"
+            cuerpo_staff = f"""Hola equipo,
+Ha llegado una nueva solicitud de cotización al sistema.
+
+Datos del cliente:
+- Empresa: {cotizacion.empresa}
+- RUT: {cotizacion.rut_empresa or 'No indicado'}
+- Contacto: {cotizacion.nombre_contacto}
+- Email: {cotizacion.email}
+- Teléfono: {cotizacion.telefono}
+
+N° de solicitud: #{cotizacion.id}
+Productos solicitados: {cotizacion.detalles.count()}
+
+Ingresa al panel para asignar precios y responder:
+{panel_url}
+
+Saludos,
+Sistema HunarPack B2B
+"""
+            send_mail(
+                asunto_staff,
+                cuerpo_staff,
+                settings.DEFAULT_FROM_EMAIL,
+                staff_emails,
+                fail_silently=True,
+            )
         # -----------------------------------------------
 
         # Paso 5. Vaciar (destruir) el carrito temporal de la sesión
         del request.session['carrito']
         request.session.modified = True
 
-        # Paso 6. Confirmar exito y redirigir a inicio (PROBAR ALGUNA PANTALLA DE "AGRADECIMIENTO" PENDIENTE)
+        # Paso 6. Confirmar exito y redirigir a inicio
         messages.success(request, f"¡Su cotización se envió exitosamente!. Nos pondremos en contacto pronto.")
         return redirect('lista_productos')
 
@@ -402,7 +441,7 @@ def fijar_precios_cotizacion(request, cotizacion_id):
                 subtotal_neto_general += int(subtotal_linea_neto)
                 descuento_total_general += int(monto_descuento_linea)
 
-        # Calcylos globales de la cotización
+        # Calculos globales de la cotización
         cotizacion.subtotal_neto = subtotal_neto_general
         cotizacion.descuento_total = descuento_total_general
         cotizacion.iva = int(subtotal_neto_general * 0.19)
@@ -413,7 +452,53 @@ def fijar_precios_cotizacion(request, cotizacion_id):
         cotizacion.estado = 'RESPONDIDA'
         cotizacion.save()
 
-        messages.success(request, f"¡Precios fijados exitosamente! La cotización #{cotizacion.id} ahora incluye IVA y descuentos.")
+        # Creación del PDF y envío por correo
+        #-------------------------------------
+
+        # Paso 1. Renderizado en HTML del PDF
+        template = get_template('catalogo/pdf_cotizacion.html')
+        html = template.render({'cotizacion': cotizacion})
+
+        # Paso 2. Se crea un buffer de memoria para el PDF
+        pdf_buffer = io.BytesIO()
+        pisa_status = pisa.CreatePDF(html, dest=pdf_buffer)
+
+        if not pisa_status.err:
+            # se retorna al ainicio del buffer para leerlo
+            pdf_buffer.seek(0)
+
+            # Paso 3. Se envía el correo al cliente con el PDF adjunto.
+            asunto_cliente = f"Cotización N° {cotizacion.id} - HunarPack B2B"
+            nombre_ejecutivo = f"{cotizacion.ejecutivo.first_name} {cotizacion.ejecutivo.last_name}".strip() or cotizacion.ejecutivo.username
+            cuerpo_cliente = f"""Hola {cotizacion.nombre_contacto},
+            
+Adjunto encontrarás la cotización formal para {cotizacion.empresa}, con los valores vigentes solicitados.
+
+Resumen:
+- Cotizacion N°: {cotizacion.id}
+- Total Final (IVA incluído): ${cotizacion.total}
+- Días de validez: {cotizacion.dias_validez}
+
+Si tienes alguna duda, puedes contactar a tu ejecutivo asignado: {nombre_ejecutivo}
+{cotizacion.ejecutivo.email}
+
+Gracias por preferir HunarPack.
+"""
+            email_cliente = EmailMessage(
+                asunto_cliente,
+                cuerpo_cliente,
+                settings.DEFAULT_FROM_EMAIL,
+                [cotizacion.email],
+            )
+            email_cliente.attach(
+                f"Cotizacion_Hunarpack_{cotizacion.id}.pdf",
+                pdf_buffer.getvalue(),
+                'application/pdf'
+            )
+            email_cliente.send(fail_silently=False)
+
+
+        messages.success(request, f"¡Cotización #{cotizacion.id} respondida y enviada al cliente por correo!")
         return redirect('dashboard')
 
     return render(request, 'catalogo/fijar_precios.html', {
@@ -503,6 +588,49 @@ def eliminar_staff(request, user_id):
     messages.success(request, f"El ejecutivo {nombre} ha sido eliminado del equipo.")
     return redirect('gestion_personal')
 
+@user_passes_test(es_superadmin, login_url='/panel/')
+def simular_cotizacion(request):
+    if request.method != 'POST':
+        return redirect('dashboard')
+
+    # Se usaran solo productos con stock disponible
+    productos_disponibles = list(Producto.objects.filter(stock_actual__gt=0))
+    if not productos_disponibles:
+        messages.error(request, "No hay productos con stock disponibles para simular una cotización.")
+        return redirect('dashboard')
+
+    # Se eligen entre 1 y 3 productos al azar
+    cantidad_productos = min(len(productos_disponibles), random.randint(1, 3))
+    productos_elegidos = random.sample(productos_disponibles, cantidad_productos)
+
+    # Creación de la cotizacion simulada
+    cotizacion =  Cotizacion.objects.create(
+        usuario=request.user,
+        empresa="Empresa Simulada SpA",
+        rut_empresa="76.543.210-K",
+        nombre_contacto="Contacto de Prueba",
+        telefono="+56 9 1234 5678",
+        email="simulacion@hunarpack.cl",
+        mensaje="[SIMULACION] Esta cotización fue generada automáticamente para pruebas del sistema.",
+        estado='PENDIENTE',
+    )
+
+    for producto in productos_elegidos:
+        cantidad = random.randint(1, min(5, producto.stock_actual))
+        DetalleCotizacion.objects.create(
+            cotizacion=cotizacion,
+            producto=producto,
+            cantidad=cantidad,
+            precio_unitario=0,
+            subtotal=0,
+        )
+        # Al ser simulación no se descuenta realmente del stock
+    
+    messages.success(
+        request,
+        f"Cotización simulada #{cotizacion.id} creada con {cantidad_productos} productos. Revisa la bandeja de pendientes."
+    )
+    return redirect('dashboard')
 # Cambio de contraseña para todo usuario.
 class CambiarContrasena(PasswordChangeView):
     template_name = 'catalogo/cambiar_contrasena.html'

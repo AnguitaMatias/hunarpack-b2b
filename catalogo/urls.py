@@ -45,4 +45,5 @@ urlpatterns = [
     path('panel/personal/', views.gestion_personal, name='gestion_personal'),
     path('panel/personal/editar/<int:user_id>/', views.editar_staff, name='editar_staff'),
     path('panel/personal/eliminar/<int:user_id>/', views.eliminar_staff, name='eliminar_staff'),
+    path('panel/simular/', views.simular_cotizacion, name='simular_cotizacion'),
 ]
