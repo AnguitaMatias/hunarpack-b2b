@@ -165,7 +165,11 @@
         <tbody>
             {% for detalle in cotizacion.detalles.all %}
             <tr>
-                <td>{{ detalle.producto.nombre }}</td>
+                <td>{{ detalle.variante.producto.nombre }}<br>
+                    <small style="color: #666;">
+                        {{ detalle.variante.nombre_variante }} - {{ detalle.variante.codigo }}
+                    </small>
+                </td>
                 <td class="text-center">{{ detalle.cantidad|peso }}</td>
                 <td class="text-right">${{ detalle.precio_unitario|peso }}</td>
                 <td class="text-center">{{ detalle.porcentaje_descuento|peso }}%</td>

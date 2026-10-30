@@ -1,6 +1,6 @@
 <nav class="navbar navbar-dark bg-dark mb-4 shadow-sm">
     <div class="container">
-        <a href="{% url 'lista_productos' %}" class="navbar-brand mb-0 h1">HunarPack B2B</a>
+        <a href="{% url 'landing_page' %}" class="navbar-brand mb-0 h1">HunarPack B2B</a>
 
         <!-- Carrito -->
         <div class="d-flex gap-3 align-items-center">
@@ -19,11 +19,9 @@
                     <i class="bi bi-person-circle"></i> {{ user.username }}
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a href="{% url 'mi_perfil' %}" class="dropdown-item fw-bold text-info"><i class="bi bi-person-circle"></i> Mi Perfil</a></li>
                     <li><a href="{% url 'mi_historial' %}" class="dropdown-item fw-bold text-success"><i class="bi bi-clock-history"></i> Mi Historial</a></li>
-                    <li><a href="{% url 'cambiar_clave' %}" class="dropdown-item fw-bold text-warning-emphasis"><i class="bi bi-key"></i>
-                        Cambiar Contraseña
-                    </a>
-                    </li>
+                    <li><a href="{% url 'cambiar_clave' %}" class="dropdown-item fw-bold text-warning-emphasis"><i class="bi bi-key"></i> Cambiar Contraseña</a></li>
                     {% if user.is_staff %}
                         <li><a href="{% url 'dashboard' %}" class="dropdown-item text-primary fw-bold"> <i class="bi bi-speedometer2"></i> Dashboard de Gestión</a></li>
                     {% endif %}

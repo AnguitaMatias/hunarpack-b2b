@@ -1,0 +1,197 @@
+{% extends 'catalogo/components/base.html' %}
+
+{% block content %}
+<style>
+    .hover-shadow:hover {
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
+    }
+</style>
+
+<div class="container mt-5 mb-5">
+    <!-- Breadcrumbs -->
+    <nav class="mb-4" aria-label="breadcrumb">
+        <div class="mb-3">
+            <a href="{% url 'lista_productos' producto.categoria.id %}" class="btn btn-outline-secondary btn-sm fw-bold">
+                <i class="bi bi-arrow-left"></i> Volver a {{ producto.categoria.nombre }}
+            </a>
+        </div>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'lista_categorias' %}" class="text-decoration-none">Catálogo</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'lista_categorias' %}?categoria={{ producto.categoria.id }}" class="text-decoration-none">{{ producto.categoria.nombre }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ producto.nombre }}</li>
+        </ol>
+    </nav>
+
+    <div class="row bg-white p-4 rounded shadow-sm-border-0">
+        <!-- Carrusel de Imágenes (Izquierda) -->
+        <div class="col-md-6 mb-4">
+            <div class="carousel slide border rounded" id="carruselProducto" data-bs-ride="false">
+                <div class="carousel-inner bg-light text-center d-flex align-items-center" style="height: 400px;">
+                    {% if producto.imagen %}
+                    <div class="carousel-item active w-100 h-100 d-flex align-items-center justify-content-center">
+                        <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="d-block img-fluid" style="max-height: 100%; object-fit: contain;">
+                    </div>
+                    {% else %}
+                    <div class="carousel-item active w-100 h-100 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-box-seam display-1 text-secondary opacity-25"></i>
+                    </div>
+                    {% endif %}
+
+                    <!-- Imagenes adicionales (de las variantes) -->
+                    {% for variante in variantes %}
+                        {% for img in variante.imagenes_extra.all %}
+                        <div class="carousel-item w-100 h-100 d-flex align-items-center justify-content-center">
+                            <img src="{{ img.imagen.url }}" alt="Imagen extra" class="d-block img-fluid" style="max-height: 100%; object-fit: contain;">
+                        </div>
+                        {% endfor %}
+                    {% endfor%}
+                </div>
+                <button type="button" class="carousel-control-prev" data-bs-target="#carruselProducto" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
+                </button>
+                <button type="button" class="carousel-control-next" data-bs-target="#carruselProducto" data-bs-slide="next">
+                    <span class="carousel-control-next-icon bg-dark rounded-circle" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Información y Selector de variante (Derecha) -->
+        <div class="col-md-6">
+            <h1 class="fw-bold text-dark mb-2">{{ producto.nombre }}</h1>
+            <p class="text-muted mb-4">{{ producto.descripcion }}</p>
+
+            <h5 class="fw-bold mb-3">Selecciona una presentación:</h5>
+
+            <!-- Formulario para ir agregnado al carro los productos (variantes) -->
+            <form id="form-agregar">
+                <div class="mb-3">
+                    <select id="selector-variante" class="form-select form-select-lg mb-3 border-dark">
+                        {% for variante in variantes %}
+                            <option value="{{ variante.id }}" 
+                                    data-codigo="{{ variante.codigo }}" 
+                                    data-unidades="{{ variante.unidades_por_caja }}"
+                                    data-dimensiones="{{ variante.dimensiones|default:'No especificadas' }}"
+                                    data-material="{{ variante.presentacion|default:'No especificado' }}"
+                                    data-presentacion="{{ variante.presentacion|default:'No especificada' }}"
+                                    data-microondas="{% if variante.apto_microondas %}Sí{% else %}No{% endif %}"
+                                    data-ecologico="{% if variante.es_ecologico %}Sí{% else %}No{% endif %}"
+                                    data-stock="{{ variante.stock_actual }}"
+                                    {% if variante.stock_actual <= 0 %}disabled{% endif %}>
+                                {{ variante.nombre_variante }} - {{ variante.codigo }}
+                                {% if variante.stock_actual <= 0 %}Agotado{% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Panel de las especificaciones (cambio dinámico) -->
+                <div class="card bg-light border-0 mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="fw-bold border-bottom pb-2 mb-3">Especificaciones Técnicas</h6>
+                        <ul class="list-unstyled mb-0 small">
+                            <li class="mb-2"><strong>Código:</strong> <span id="spec-codigo">-</span></li>
+                            <li class="mb-2"><strong>Uds. por caja:</strong> <span id="spec-unidades">-</span></li>
+                            <li class="mb-2"><strong>Dimensiones:</strong> <span id="spec-dimensiones">-</span></li>
+                            <li class="mb-2"><strong>Material:</strong> <span id="spec-material">-</span></li>
+                            <li class="mb-2"><strong>Presentación:</strong> <span id="spec-presentacion">-</span></li>
+                            <li class="mb-2"><strong>¿Apto Microondas?:</strong> <span id="spec-microondas">-</span></li>
+                            <li><strong>¿Ecológico?</strong> <span id="spec-ecologico">-</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="d-grid gapp-2">
+                    <button type="button" id="btn-agregar-detalle" class="btn btn-primary btn-lg fw-bold">
+                        <i class="bi bi-cart-plus"></i> Agregar al Carrito
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    <!-- Lógica para que se actualicen las especificaciones al cambiar de una variante a otra -->
+    document.addEventListener('DOMContentLoaded', function() {
+        const selector = document.getElementById('selector-variante');
+        const btnAgregar = document.getElementById('btn-agregar-detalle');
+    
+        function actualizarSpecs() {
+            const opcion = selector.options[selector.selectedIndex];
+            if (!opcion) return;
+    
+            document.getElementById('spec-codigo').innerText = opcion.dataset.codigo;
+            document.getElementById('spec-unidades').innerText = opcion.dataset.unidades;
+            document.getElementById('spec-dimensiones').innerText = opcion.dataset.dimensiones;
+            document.getElementById('spec-material').innerText = opcion.dataset.material;
+            document.getElementById('spec-presentacion').innerText = opcion.dataset.presentacion;
+            document.getElementById('spec-microondas').innerText = opcion.dataset.microondas;
+            document.getElementById('spec-ecologico').innerText = opcion.dataset.ecologico;
+    
+            // Desahabilitar el boton agregar si no hay stock
+            if (opcion.dataset.stock <= 0) {
+                btnAgregar.disabled = true;
+                btnAgregar.innerText = 'Sin Stock';
+            } else {
+                btnAgregar.disabled = false;
+                btnAgregar.innerHTML = '<i class="bi bi-cart-plus"></i> Agregar al Carrito';
+            }
+        }
+    
+        // Se ejecuta al cargar la página
+        actualizarSpecs();
+    
+        // Se ejecutará cada vez que el usuario cambie de una variante en el select
+        selector.addEventListener('change', actualizarSpecs);
+    
+        // Lógica para agregar al carrito desde esta vista
+        btnAgregar.addEventListener('click', function() {
+            const varianteId = selector.value;
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const btn = this;
+
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Agregando...';
+
+            fetch('/api/carrito/agregar/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ 'variante_id': varianteId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'ok') {
+                    document.getElementById('contador-carrito').innerText = data.total_productos;
+                    btn.innerHTML = '¡Agregado!';
+                    btn.classList.replace('btn-primary', 'btn-success');
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.classList.replace('btn-success', 'btn-primary');
+                    }, 1000);
+                } else if (data.status === 'sin_stock') {
+                    alert(data.mensaje);
+                    btn.innerHTML = originalText;
+                } else {
+                    // Captura el error 'Variante no encontrada' o cualquier otro
+                    alert("Error: " + (data.message || "No se pudo agregar."));
+                    btn.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                alert("Hubo un error de conexión.");
+                btn.innerHTML = originalText;
+            })
+            .finally(() => {
+                // Pase lo que pase, el botón se vuelve a habilitar
+                btn.disabled = false;
+            });
+        });
+    });
+</script>
+{% endblock %}

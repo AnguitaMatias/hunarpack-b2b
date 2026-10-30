@@ -1,69 +1,72 @@
 {% extends 'catalogo/components/base.html' %}
 
 {% block content %}
-<div class="container">
-    <h2 class="mb-4">Catálogo de Productos</h2>
-    <div class="row mb-4">
-        <!-- Formulario GET para enviar los parametros a la URL -->
-         <form action="" method="get" class="d-flex gap-2 shadow-sm p-3 bg-white rounded">
+<div class="container mt-4">
+    <!-- breadcrumbs -->
+    <nav class="mb-4" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'lista_categorias' %}" class="text-decoration-none">Catálogo</a></li>
+            {% if categoria_actual %}
+                <li class="breadcrumb-item active" aria-current="page">{{ categoria_actual.nombre }}</li>
+            {% else %}
+                <li class="breadcrumb-item active" aria-current="page">Resultados de búsqueda</li>
+            {% endif %}
+        </ol>
+    </nav>
 
-            <!-- Selector de Categorias -->
-             <select name="categoria" class="form-select w-auto border-secondary" onchange="this.form.submit()">
-                <option value="">Todas las categorías</option>
-                {% for c in categorias %}
-                    <!-- Se usa el if para la mantención de la categoría luego de buscar -->
-                     <option value="{{ c.id }}" {% if categoria_id == c.id|stringformat:"s" %}selected{% endif %}>
-                        {{ c.nombre }}
-                     </option>
-                {% endfor %}
-             </select>
-
-             <!-- Input para la búsqueda -->
-              <div class="input-group">
-                <input type="text" name="q" class="form-control border secondary" placeholder="Buscar embalajes, cajas, cintas, etc..." value="{{ query|default_if_none:'' }}">
-                <button type="submit" class="btn btn-dark px-4">
-                    <i class="bi bi-search"></i> Buscar
-                </button>
-
-                <!-- Limpiar filtros si es que hay una búsqueda activa -->
-                {% if query or categoria_id %}
-                    <a href="{% url 'lista_productos' %}" class="btn btn-outline-danger">Limpiar</a>
-                {% endif %}
-              </div>
-         </form>
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h2 class="mb-0 fw-bold text-dark">
+                {% if categoria_actual %}{{ categoria_actual.nombre }}{% else %}Resultados de Búsqueda{% endif %}
+            </h2>
+        </div>
+        <div class="col-md-6">
+            <form action="" method="get" class="d-flex gap-2">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control border-secondary" value="{{ query|default_if_none:'' }}" placeholder="Buscar en esta categoría...">
+                    <button type="submit" class="btn btn-outline-secondary text-nowrap"><i class="bi bi-search"></i></button>
+                </div>
+                <a href="{% url 'lista_categorias' %}" class="btn btn-outline-secondary text-nowrap">Volver</a>
+            </form>
+        </div>
     </div>
-    <div class="row row-cols-1 row-cols-md-3 g-4">       
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
         {% for producto in productos %}
         <div class="col">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <h5 class="card-title">{{ producto.nombre }}</h5>
-                    <h6 class="card-subtitle mb-2 text-muted">{{ producto.categoria.nombre }}</h6>
-                    <p class="card-text fs-5 fw-bold text-primary" hidden>${{ producto.precio }}</p>
-                </div>
+            <div class="card h-100 shadow-sm border-0 hover-shadow">
 
-                <div class="card-footer bg-white border-0 text-center pb-3">
-                    {% if producto.estado_stock == 'Agotado' %}
-                        <span class="badge bg-danger w-100 py-2 mb-2">Agotado</span>
-                        <button class="btn btn-outline-secondary w-100" disabled>Sin Stock</button>
-                    {% elif producto.estado_stock == 'Crítico' %}
-                        <span class="badge bg-warning text-dark w-100 py-2 mb-2">Últimas {{ producto.stock_actual }} unidades</span>
-                        <button class="btn btn-primary w-100 btn-agregar" data-id="{{ producto.id }}">Agregar al Carro</button>
+                <!-- Imagen del producto (usará placeholder si no hay) -->
+                <div class="bg-light text-center rounded-top"
+                    style="height: 200px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                    {% if producto.imagen %}
+                    <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="img-fluid"
+                        style="object-fit: cover; width: 100%; height: 100%;">
                     {% else %}
-                        <span class="badge bg-success w-100 py-2 mb-2">Stock Disponible</span>
-                        <button class="btn btn-primary w-100 btn-agregar" data-id="{{ producto.id }}">Agregar al Carro</button>
+                    <i class="bi bi-box-seam display-1 text-secondary opacity-25"></i>
                     {% endif %}
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title fw-bold text-dark mb-1">{{ producto.nombre }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted small">{{ producto.categoria.nombre }}</h6>
+                    <p class="card-text text-secondary small text-truncate">{{ producto.descripcion|default:"Sin descripción." }}</p>
+                </div>
+                <div class="card-footer bg-white border-0 pb-3">
+                    <!-- Botón para poder ver el detalle y las variantes de los productos -->
+                    <a href="{% url 'detalle_producto' producto.id %}" class="btn btn-outline-dark w-100 fw-bold">
+                        Ver Detalles <i class="bi bi-arrow-right"></i>
+                    </a>
                 </div>
             </div>
         </div>
         {% empty %}
         <div class="col-12">
             <div class="alert alert-info text-center" role="alert">
-                Aún no hay productos disponibles en el catálogo.
+                No se encontraron productos con esos criterios.
             </div>
         </div>
         {% endfor %}
-
     </div>
 </div>
 {% endblock %}
+

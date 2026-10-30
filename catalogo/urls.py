@@ -4,10 +4,13 @@ from . import views
 
 urlpatterns = [
     # Rutas generales
-    path('', views.lista_productos, name='lista_productos'),
-    path('api/carrito/agregar/', views.agregar_al_carrito, name='agregar_al_carrito'),
+    path('', views.landing_page, name='landing_page'),
+    path('catalogo/', views.lista_categorias, name='lista_categorias'),
+    path('catalogo/categoria/<int:categoria_id>/', views.lista_productos, name='lista_productos'),
+    path('producto/<int:producto_id>', views.detalle_producto, name='detalle_producto'),
 
     # Rutas del carro y checkout
+     path('api/carrito/agregar/', views.agregar_al_carrito, name='agregar_al_carrito'),
     path('carrito/', views.resumen_carrito, name='resumen_carrito'),
     path('api/carrito/actualizar/', views.actualizar_carrito, name='actualizar_carrito'),
     path('checkout/procesar/', views.procesar_cotizacion, name='procesar_cotizacion'),
@@ -20,6 +23,7 @@ urlpatterns = [
     path('mi-historial/', views.mi_historial, name='mi_historial'),
     path('registro/', views.registro, name='registro'),
     path('cambiar-clave/', views.CambiarContrasena.as_view(), name='cambiar_clave'),
+    path('mi-perfil/', views.mi_perfil, name='mi_perfil'),
 
     # Flujo para recuperación de contraseñas olvidadas (Exclusivo clientes)
     path('reiniciar-password/', auth_views.PasswordResetView.as_view(

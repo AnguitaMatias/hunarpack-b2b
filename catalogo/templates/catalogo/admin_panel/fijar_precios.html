@@ -27,7 +27,10 @@
                         <tbody>
                             {% for detalle in detalles %}
                             <tr>
-                                <td class="fw-semibold">{{ detalle.producto.nombre }}</td>
+                                <td class="fw-semibold">
+                                    {{ detalle.variante.producto.nombre }}<br>
+                                    <small class="text-muted">{{ detalle.variante.nombre_variante }} ({{ detalle.variante.codigo }})</small>
+                                </td>
                                 <td class="text-center">
                                     <span class="badge bg-dark fs-6">{{ detalle.cantidad }} unid.</span>
                                 </td>

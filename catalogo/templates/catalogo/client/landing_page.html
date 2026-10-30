@@ -1,0 +1,88 @@
+{% extends 'catalogo/components/base.html' %}
+
+{% block content %}
+<!-- HERO -->
+<div class="bg-dark text-white text-center py-5 mb-5"
+    style="background: linear-gradient(135deg, #1f2328 0%, #343a40 100%);">
+    <div class="container py-5">
+        <h1 class="display-4 fw-bold mb-3">Insumos de Embalaje Directo para tu Empresa</h1>
+        <p class="lead text-white-50 mb-5 mx-auto" style="max-width: 700px;">
+            Plataforma B2B exclusiva. Arma tu lista de requerimientos y recibe una cotización formal con precios
+            mayoristas en la comodidad de tu correo.
+        </p>
+        <a href="{% url 'lista_categorias' %}" class="btn btn-warning btn-lg fw-bold px-5 py-3 shadow">
+            <i class="bi bi-box-seam"></i> Ingresa a Nuestro Catálogo
+        </a>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <!-- Seccion para explicar el sistema de cotizaciones -->
+    <div class="row text-center mb-5 py-4">
+        <h2 class="fw-bold mb-5 text-dark">¿Cómo funciona nuestro sistema de cotización?</h2>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm p-4">
+                <div class="card-body">
+                    <i class="bi bi-search display-4 text-primary mb-3"></i>
+                    <h4 class="card-title fw-bold">1. Explora</h4>
+                    <p class="card-text text-muted">Revisa nuestro catálogo, filtra a tu gusto y da con el producto
+                        perfecto para ti.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm p-4">
+                <div class="card-body">
+                    <i class="bi bi-cart-check display-4 text-primary mb-3"></i>
+                    <h4 class="card-title fw-bold">2. Agrega</h4>
+                    <p class="card-text text-muted">Añade los productos que necesitas a tu carrito de solicitud, ajusta
+                        las cantidades y finalmente envía la solicitud rellenando el formulario de contacto.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm p-4">
+                <div class="card-body">
+                    <i class="bi bi-file-earmark-pdf display-4 text-primary mb-3"></i>
+                    <h4 class="card-title fw-bold">3. Recibe</h4>
+                    <p class="card-text text-muted">Un ejecutivo evaluará tu solicitud y te enviará un PDF con los
+                        precios vigentes</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-5">
+
+    <!-- Productos Destacados -->
+    <div class="text-center mb-4">
+        <h3 class="fw-bold text-dark">Te presentamos algunos de nuestros productos</h3>
+        <p class="text-muted">Los insumas más solicitados por nuestros clientes.</p>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
+        {% for producto in productos_destacados %}
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm text-center">
+                <!--Incorporar imagenes luego-->
+                <div class="card-body py-5 bg-light rounded-top">
+                    <i class="bi bi-box display-4 text-secondary"></i>
+                </div>
+                <div class="card-footer bg-white border-0 py-3">
+                    <h5 class="fw-bold text-dark mb-1">{{ producto.nombre }}</h5>
+                    <p class="text-muted small mb-0">{{ producto.categoria.nombre }}</p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center text-muted">Pronto tendremos productos disponibles</div>
+        {% endfor %}
+    </div>
+
+    <div class="bg-light rounded p-5 text-center shadow-sm">
+        <h3 class="fw-bold text-dark mb-3">¿Listo para abastecer tu empresa?</h3>
+        <p class="text-muted mb-4">Ingresa ahora y arma tu solicitud en menos de 2 minutos.</p>
+        <a href="{% url 'lista_categorias' %}" class="btn btn-dark fw-bold px-4 py-2">Ir al Catálogo</a>
+    </div>
+</div>
+{% endblock %}

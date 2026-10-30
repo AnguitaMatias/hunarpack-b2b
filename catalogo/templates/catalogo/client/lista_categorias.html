@@ -1,0 +1,46 @@
+{% extends 'catalogo/components/base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold text-dark">Nuestro Catálogo</h2>
+        <p class="text-muted">Selecciona una categoría para explorar nuestros productos.</p>
+    </div>
+
+    <!-- Buscador -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8">
+            <form action="{% url 'lista_categorias' %}" method="GET" class="input-group shadow-sm">
+                <input type="text" name="q" class="form-control form-control-lg" placeholder="Buscar producto, código o descripción...">
+                <button type="submit" class="btn btn-dark px-4"><i class="bi bi-search"></i> Buscar</button>
+            </form>
+        </div>
+    </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for categoria in categorias %}
+        <div class="col">
+            <a href="{% url 'lista_productos' categoria.id %}" class="text-decoration-none">
+                <div class="card h-100 shadow-sm border-0 text-white overflow-hidden hover-shadow" style="min-height: 200px;">
+                    <!-- Imagen de la categoría o un fondo gris -->
+                    <div class="position-absolute w-100 h-100" style="z-index: 1; background: linear-gradient(to top, rgba(0,0,0,0.2));"></div>
+                    {% if categoria.imagen %}
+                        <img src="{{ categoria.imagen.url }}" alt="{{ categoria.nombre }}" class="position-absolute w-100 h-100" style="object-fit: cover; z-index: 0;">
+                    {% else %}
+                        <div class="position-absolute w-100 h-100 bg-secondary" style="z-index: 0;"></div>
+                    {% endif %}
+
+                    <div class="card-img overlay d-flex flex-column justify-content-end p-4" style="z-index: 2;">
+                        <h3 class="fw-bold mb-1">{{ categoria.nombre }}</h3>
+                        <span class="small">Ver productos <i class="bi bi-arrow-right"></i></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <p class="text-muted">Aún no hay categorías registradas.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
