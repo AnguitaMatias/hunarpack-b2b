@@ -12,6 +12,149 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <style>
+        /* =========================================
+           PALETA: VIBRANT ECO (Con vida y volumen)
+           ========================================= */
+    
+        :root {
+            /* Fondos */
+            --v-bg: #F4F1EA;
+            /* Fondo general: Crema cálido (no blanco) */
+            --v-card: #FFFFFF;
+            /* Tarjetas en blanco puro para resaltar */
+    
+            /* Estructuras (Verdes vibrantes) */
+            --v-dark: #2F3E2A;
+            /* Verde muy oscuro (Textos principales, Footer) */
+            --v-primary: #7BA356;
+            /* Verde Hoja vibrante (Navbar, Botones) */
+            --v-primary-hover: #5C8A3F;
+            --v-teal: #538A86;
+            /* Teal vibrante (Acentos, Hover) */
+    
+            /* Acentos Cálidos (Tierra) */
+            --v-accent: #C4754C;
+            /* Terracota (Warnings, etiquetas) */
+            --v-border: #E2DCD0;
+            /* Borde cálido visible */
+    
+            /* Estados */
+            --v-success: #7BA356;
+            --v-danger: #C0392B;
+            --v-warning: #DDA048;
+        }
+    
+        /* Fondos y Textos */
+        body {
+            background-color: var(--v-bg) !important;
+            color: var(--v-dark) !important;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+    
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            color: var(--v-dark) !important;
+        }
+    
+        .text-muted {
+            color: #7A8576 !important;
+        }
+    
+        /* Navbar y Footer (Verde Hoja) */
+        .bg-dark {
+            background-color: var(--v-primary) !important;
+        }
+    
+        .navbar-dark .navbar-brand,
+        .navbar-dark .navbar-text {
+            color: #ffffff !important;
+        }
+    
+        /* Botones Principales */
+        .btn-primary,
+        .btn-success {
+            background-color: var(--v-primary) !important;
+            border-color: var(--v-primary) !important;
+            color: white !important;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+    
+        .btn-primary:hover,
+        .btn-success:hover {
+            background-color: var(--v-teal) !important;
+            border-color: var(--v-teal) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(83, 138, 134, 0.3) !important;
+        }
+    
+        /* Botones Oscuros (Acciones secundarias) */
+        .btn-dark {
+            background-color: var(--v-dark) !important;
+            border-color: var(--v-dark) !important;
+        }
+    
+        .btn-dark:hover {
+            background-color: #1a2417 !important;
+        }
+    
+        /* Botones Warning (Terracota) */
+        .btn-warning {
+            background-color: var(--v-accent) !important;
+            border-color: var(--v-accent) !important;
+            color: white !important;
+        }
+    
+        /* Tarjetas con Volumen */
+        .card {
+            background-color: var(--v-card) !important;
+            border: 1px solid var(--v-border) !important;
+            border-radius: 12px;
+            /* Sombra más pronunciada para dar vida */
+            box-shadow: 0 10px 20px rgba(47, 62, 42, 0.08) !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+    
+        .card:hover {
+            box-shadow: 0 15px 30px rgba(47, 62, 42, 0.15) !important;
+            transform: translateY(-5px);
+        }
+    
+        /* Badges de Estado */
+        .bg-success {
+            background-color: var(--v-success) !important;
+        }
+    
+        .bg-danger {
+            background-color: var(--v-danger) !important;
+        }
+    
+        .bg-warning {
+            background-color: var(--v-warning) !important;
+            color: white !important;
+        }
+    
+        /* Inputs vibrantes al enfocar */
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--v-teal) !important;
+            box-shadow: 0 0 0 0.25rem rgba(83, 138, 134, 0.2) !important;
+        }
+    
+        /* Clases de utilidad para secciones */
+        .bg-seccion-crema {
+            background-color: #EBE5D9 !important;
+        }
+    
+        .bg-seccion-verde {
+            background-color: #E4EADF !important;
+        }
+    </style>
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">
 

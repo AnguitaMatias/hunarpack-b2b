@@ -22,11 +22,11 @@
             <a href="{% url 'lista_productos' categoria.id %}" class="text-decoration-none">
                 <div class="card h-100 shadow-sm border-0 text-white overflow-hidden hover-shadow" style="min-height: 200px;">
                     <!-- Imagen de la categoría o un fondo gris -->
-                    <div class="position-absolute w-100 h-100" style="z-index: 1; background: linear-gradient(to top, rgba(0,0,0,0.2));"></div>
+                    <div class="position-absolute w-100 h-100" style="z-index: 1; background: linear-gradient(135deg, #7B9669 0%, #6C8480 100%);"></div>
                     {% if categoria.imagen %}
                         <img src="{{ categoria.imagen.url }}" alt="{{ categoria.nombre }}" class="position-absolute w-100 h-100" style="object-fit: cover; z-index: 0;">
                     {% else %}
-                        <div class="position-absolute w-100 h-100 bg-secondary" style="z-index: 0;"></div>
+                        <div class="position-absolute w-100 h-100 bg-secondary" style="background: linear-gradient(135deg, #C4754C 0%, #7AB356 100%); z-index: 0;"></div>
                     {% endif %}
 
                     <div class="card-img overlay d-flex flex-column justify-content-end p-4" style="z-index: 2;">

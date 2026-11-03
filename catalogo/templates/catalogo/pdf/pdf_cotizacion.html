@@ -1,5 +1,6 @@
-<!DOCTYPE html>
+{% load static %}
 {% load filtros %}
+<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -13,8 +14,8 @@
 
         body {
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 12px;
-            color: #333;
+            font-size: 11px;
+            color: #2F3E2A;
         }
 
         table {
@@ -27,49 +28,56 @@
             border: none;
         }
 
+        /* Caja de información del cliente */
         .info-box {
-            border: 1px solid #ddd;
-            padding: 10px;
+            border: 1px solid #D1D8D0;
+            background-color: #E4EADF;
+            padding: 12px;
             margin-top: 20px;
-            margin-bottom: 20px;
-            background-color: #f8f9fa;
+            margin-bottom: 25px;
+            border-radius: 8px;
         }
 
         .info-box td {
-            padding: 4px;
+            padding: 5px;
             border: none;
             font-size: 11px;
+            color: #2F3E2A;
         }
 
+        /* Tabla de productos */
         .items-table th {
-            background-color: #2c3e50;
+            background-color: #7BA356;
             color: white;
-            padding: 8px;
+            padding: 10px;
             text-align: left;
-            border: 1px solid #2c3e50;
+            border: 1px solid #7BA356;
             font-size: 11px;
         }
 
         .items-table td {
-            padding: 8px;
-            border: 1px solid #ddd;
+            padding: 10px;
+            border: 1px solid #D1D8D0;
+            background-color: #FFFFFF;
         }
 
+        /* Tabla de totales */
         .totals-table {
-            width: 40%;
+            width: 45%;
             float: right;
-            margin-top: 20px;
+            margin-top: 25px;
         }
 
         .totals-table th,
         .totals-table td {
-            padding: 6px;
-            border: 1px solid #ddd;
+            padding: 8px;
+            border: 1px solid #D1D8D0;
         }
 
         .totals-table th {
-            background-color: #f0f0f0;
+            background-color: #F4F1EA;
             text-align: left;
+            color: #2F3E2A;
         }
 
         .text-right {
@@ -83,6 +91,11 @@
         .bold {
             font-weight: bold;
         }
+
+        .total-final {
+            background-color: #2F3E2A !important;
+            color: white !important;
+        }
     </style>
 </head>
 
@@ -91,18 +104,19 @@
     <table class="header-table">
         <tr>
             <td style="width: 50%;">
-                <!-- placeholder para el logo -->
-                <h1 style="color: #2c3e50; margin: 0; font-size: 28px; text-transform: uppercase;">HUNARPACK</h1>
-                <p style="margin: 5px 0; color: #555;">
+                <!-- Logo  -->
+                <img src="{% static 'catalogo/img/logo.png' %}" alt="HunarPack" style="height: 60px;">
+                <p style="margin: 10px 0 0 0; color: #6B7A69; font-size: 10px; line-height: 1.4;">
                     Dirección Comercial 123<br>
                     Coquimbo, Chile<br>
+                    www.hunarpack.cl
                 </p>
             </td>
             <td style="width: 50%; text-align: right;">
-                <h2 style="color: #2c3e50; margin: 0; font-size: 22px;">COTIZACIÓN N° {{ cotizacion.id }}</h2>
-                <p style="margin: 5px 0; font-size: 14px;">
-                    <strong>RUT:</strong> 76.XXX.XXX-X<br>
-                    <strong>Web:</strong> www.hunarpack.cl
+                <h2 style="color: #2F3E2A; margin: 0; font-size: 24px;">COTIZACIÓN N° {{ cotizacion.id }}</h2>
+                <p style="margin: 5px 0; font-size: 12px; color: #6B7A69;">
+                    <strong>RUT Empresa:</strong> 76.XXX.XXX-X<br>
+                    <strong>Fecha Emisión:</strong> {{ cotizacion.fecha_creacion|date:"d/m/Y" }}
                 </p>
             </td>
         </tr>
@@ -112,41 +126,34 @@
     <div class="info-box">
         <table>
             <tr>
-                <td class="bold" style="width: 15%;">Cliente:</td>
-                <td style="width: 35%;">{{ cotizacion.empresa }}</td>
-                <td class="bold" style="width: 15%;">Fecha Emisión:</td>
-                <td style="width: 35%;">{{ cotizacion.fecha_creacion|date:"d/m/Y" }}</td>
+                <td class="bold" style="width: 15%; color: #6B7A69;">Cliente:</td>
+                <td style="width: 35%; font-weight: bold;">{{ cotizacion.empresa }}</td>
+                <td class="bold" style="width: 15%; color: #6B7A69;">Validez Oferta:</td>
+                <td style="width: 35%; font-weight: bold;">{{ cotizacion.dias_validez }} días</td>
             </tr>
             <tr>
-                <td class="bold">RUT Cliente:</td>
+                <td class="bold" style="color: #6B7A69;">RUT Cliente:</td>
                 <td>{{ cotizacion.rut_empresa|default:"No indicado" }}</td>
-                <td class="bold">Validez:</td>
-                <td>{{ cotizacion.dias_validez }} días</td>
-            </tr>
-            <tr>
-                <td class="bold">Contacto:</td>
-                <td>{{ cotizacion.nombre_contacto }}</td>
-                <td class="bold">Ejecutivo:</td>
+                <td class="bold" style="color: #6B7A69;">Ejecutivo:</td>
                 <td>
                     {% if cotizacion.ejecutivo %}
-                    {{ cotizacion.ejecutivo.first_name|default:cotizacion.ejecutivo.username }}
+                    {{ cotizacion.ejecutivo.first_name }} {{ cotizacion.ejecutivo.last_name }}
                     {% else %}
                     Ventas Web
                     {% endif %}
                 </td>
             </tr>
             <tr>
-                <td class="bold">Teléfono:</td>
-                <td>{{ cotizacion.telefono }}</td>
-                <td class="bold">Email Ejecutivo:</td>
+                <td class="bold" style="color: #6B7A69;">Contacto:</td>
+                <td>{{ cotizacion.nombre_contacto }}</td>
+                <td class="bold" style="color: #6B7A69;">Email Ejecutivo:</td>
                 <td>{{ cotizacion.ejecutivo.email|default:"ventas@hunarpack.cl" }}</td>
             </tr>
-
             <tr>
-                <td class="bold">Email Cliente:</td>
+                <td class="bold" style="color: #6B7A69;">Teléfono:</td>
+                <td>{{ cotizacion.telefono }}</td>
+                <td class="bold" style="color: #6B7A69;">Email Cliente:</td>
                 <td>{{ cotizacion.email }}</td>
-                <td class="bold">País:</td>
-                <td>{{ cotizacion.pais }}</td>
             </tr>
         </table>
     </div>
@@ -165,23 +172,25 @@
         <tbody>
             {% for detalle in cotizacion.detalles.all %}
             <tr>
-                <td>{{ detalle.variante.producto.nombre }}<br>
-                    <small style="color: #666;">
-                        {{ detalle.variante.nombre_variante }} - {{ detalle.variante.codigo }}
+                <td>
+                    <span style="font-weight: bold; color: #2F3E2A;">{{ detalle.variante.producto.nombre }}</span><br>
+                    <small style="color: #6B7A69;">
+                        {{ detalle.variante.nombre_variante }} - Cód: {{ detalle.variante.codigo }}
                     </small>
                 </td>
                 <td class="text-center">{{ detalle.cantidad|peso }}</td>
                 <td class="text-right">${{ detalle.precio_unitario|peso }}</td>
-                <td class="text-center">{{ detalle.porcentaje_descuento|peso }}%</td>
-                <td class="text-right">${{ detalle.subtotal|peso }}</td>
+                <td class="text-center">{{ detalle.porcentaje_descuento }}%</td>
+                <td class="text-right bold">${{ detalle.subtotal|peso }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+
     <!-- Resumen Totales -->
     <table class="totals-table">
         <tr>
-            <th>Dcto. Total Aplicado:</th>
+            <th>Descuento Aplicado:</th>
             <td class="text-right">${{ cotizacion.descuento_total|peso }}</td>
         </tr>
         <tr>
@@ -189,14 +198,22 @@
             <td class="text-right">${{ cotizacion.subtotal_neto|peso }}</td>
         </tr>
         <tr>
-            <th>IVA (19%)</th>
+            <th>IVA (19%):</th>
             <td class="text-right">${{ cotizacion.iva|peso }}</td>
         </tr>
-        <tr>
-            <th style="background-color: #2c3e50; color: white;">TOTAL FINAL:</th>
-            <td class="text-right" style="font-weight: bold; font-size: 14px; background-color: #ecf0f1;">${{ cotizacion.total|peso }}</td>
+        <tr class="total-final">
+            <th style="color: white; border: none;">TOTAL FINAL:</th>
+            <td class="text-right bold" style="font-size: 14px; border: none;">${{ cotizacion.total|peso }}</td>
         </tr>
     </table>
+
+    <div style="clear: both;"></div>
+
+    <div
+        style="margin-top: 40px; font-size: 9px; color: #A0A0A0; text-align: center; border-top: 1px solid #D1D8D0; padding-top: 10px;">
+        Documento generado automáticamente por la plataforma B2B de HunarPack.<br>
+        Valores sujetos a confirmación de stock al momento de la compra.
+    </div>
 
 </body>
 

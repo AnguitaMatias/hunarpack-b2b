@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<body style="margin: 0; padding: 0; background-color: #F4F1EA; font-family: Arial, sans-serif; color: #2F3E2A;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #F4F1EA; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" border="0" cellspacing="0" cellpadding="0"
+                    style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <tr>
+                        <td align="center" style="background-color: #2F3E2A; padding: 20px;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Panel de Ventas</h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <h2 style="color: #7BA356; margin-top: 0;">🔔 Nueva Solicitud Recibida</h2>
+                            <p style="font-size: 16px; line-height: 1.5; color: #555555;">
+                                Se ha ingresado una nueva solicitud de cotización que requiere tu atención.
+                            </p>
+
+                            <table width="100%" style="margin: 20px 0; font-size: 15px; border-collapse: collapse;">
+                                <tr>
+                                    <td style="padding: 8px; border-bottom: 1px solid #E2DCD0;"><strong>N°
+                                            Solicitud:</strong></td>
+                                    <td style="padding: 8px; border-bottom: 1px solid #E2DCD0;">#{{ cotizacion_id }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px; border-bottom: 1px solid #E2DCD0;">
+                                        <strong>Empresa:</strong></td>
+                                    <td style="padding: 8px; border-bottom: 1px solid #E2DCD0;">{{ empresa }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px; border-bottom: 1px solid #E2DCD0;"><strong>RUT:</strong>
+                                    </td>
+                                    <td style="padding: 8px; border-bottom: 1px solid #E2DCD0;">{{ rut_empresa }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px; border-bottom: 1px solid #E2DCD0;">
+                                        <strong>Contacto:</strong></td>
+                                    <td style="padding: 8px; border-bottom: 1px solid #E2DCD0;">{{ nombre_contacto }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px; border-bottom: 1px solid #E2DCD0;"><strong>Email:</strong>
+                                    </td>
+                                    <td style="padding: 8px; border-bottom: 1px solid #E2DCD0;">{{ email_cliente }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px; border-bottom: 1px solid #E2DCD0;">
+                                        <strong>Teléfono:</strong></td>
+                                    <td style="padding: 8px; border-bottom: 1px solid #E2DCD0;">{{ telefono }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px; border-bottom: 1px solid #E2DCD0;">
+                                        <strong>Productos:</strong></td>
+                                    <td style="padding: 8px; border-bottom: 1px solid #E2DCD0;">{{ cantidad_productos }}
+                                        ítems</td>
+                                </tr>
+                            </table>
+
+                            <div style="text-align: center; margin-top: 30px;">
+                                <a href="{{ panel_url }}"
+                                    style="background-color: #7BA356; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; display: inline-block;">
+                                    Ir al Panel de Control
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center"
+                            style="background-color: #2F3E2A; padding: 20px; color: #A0A0A0; font-size: 12px;">
+                            Este es un mensaje automático del sistema HunarPack B2B.
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

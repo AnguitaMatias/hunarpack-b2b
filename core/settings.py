@@ -161,5 +161,5 @@ DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'ventas@hunarpack.cl')
 
 # Config para la autenticación de usuarios.
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = 'lista_productos'
-LOGOUT_REDIRECT_URL = 'lista_productos'
+LOGIN_REDIRECT_URL = 'lista_categorias'
+LOGOUT_REDIRECT_URL = 'lista_categorias'

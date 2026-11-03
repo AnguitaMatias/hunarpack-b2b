@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<body style="margin: 0; padding: 0; background-color: #F4F1EA; font-family: Arial, Helvetica, sans-serif; color: #2F3E2A;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #F4F1EA; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);">
+                    
+                    <!-- Encabezado -->
+                    <tr>
+                        <td align="center" style="background-color: #7BA356; padding: 20px;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">HunarPack B2B</h1>
+                        </td>
+                    </tr>
+
+                    <!-- Cuerpo -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <h2 style="color: #2F3E2A; margin-top: 0;">Cotización Lista 📄</h2>
+                            <p style="font-size: 16px; line-height: 1.5; color: #555555;">
+                                Hola <strong>{{ nombre_contacto }}</strong>,
+                            </p>
+                            <p style="font-size: 16px; line-height: 1.5; color: #555555;">
+                                Adjunto a este correo encontrarás la cotización formal para <strong>{{ empresa }}</strong>, con los valores actualizados y vigentes.
+                            </p>
+                            
+                            <table width="100%" style="margin: 20px 0; font-size: 15px;">
+                                <tr>
+                                    <td style="padding: 15px; background-color: #E4EADF; border-radius: 4px; color: #2F3E2A;">
+                                        <strong>Total Final (IVA incluido):</strong> ${{ total }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 15px; background-color: #F4F1EA; border-radius: 4px; color: #555555;">
+                                        <strong>Validez de la oferta:</strong> {{ dias_validez }} días.
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="font-size: 16px; line-height: 1.5; color: #555555;">
+                                Tu ejecutivo asignado es <strong>{{ nombre_ejecutivo }}</strong>. Si tienes dudas, puedes responder directamente a este correo o escribir a {{ email_ejecutivo }}.
+                            </p>
+                            <br>
+                            <p style="font-size: 16px; color: #2F3E2A;">Saludos cordiales,<br><strong>Equipo HunarPack</strong></p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Pie del correo -->
+                    <tr>
+                        <td align="center" style="background-color: #2F3E2A; padding: 20px; color: #A0A0A0; font-size: 12px;">
+                            © 2026 HunarPack Soluciones. Plataforma B2B. Todos los derechos reservados.
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -11,12 +11,12 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.contrib.auth import logout, login as auth_login
 from django.contrib.auth.views import PasswordChangeView
-from django.core.mail import send_mail, EmailMessage
+from django.core.mail import send_mail, EmailMessage, EmailMultiAlternatives
 from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.template.loader import get_template
+from django.template.loader import get_template, render_to_string
 from django.urls import reverse_lazy
 from django.utils import timezone
 from datetime import timedelta
@@ -317,8 +317,6 @@ def procesar_cotizacion(request):
             mensaje=request.POST.get('mensaje')
         )
 
-        total_cotizacion = 0
-
         # Paso 2. Se intera sobre los items del carro para crear los "Detalles"
         for variante_id, cantidad in carrito.items():
             try:
@@ -351,32 +349,25 @@ def procesar_cotizacion(request):
         cotizacion.total = 0
         cotizacion.save()
 
-        # -- Envío del correo electronico --
-        asunto = F"Confirmación de Cotización #{cotizacion.id} - HunarPack B2B"
-        mensaje = f"""
-        Hola {cotizacion.nombre_contacto},
+        # -- CORREO DE CONFIRMACIÓN AL CLIENTE --
 
-        Hemos recibido tu solicitud de cotización para la empresa {cotizacion.empresa}.
+        html_cliente  = render_to_string('catalogo/emails/confirmacion_cliente.html', {
+            'nombre_contacto': cotizacion.nombre_contacto,
+            'empresa': cotizacion.empresa,
+            'cotizacion_id': cotizacion.id
+        })
 
-        Resumen de la solicitud:
-        - N° de Cotización: {cotizacion.id}
-
-        Nuestro equipo de ventas revisará el inventario y se pondrá en contacto contigo a la brevedad.
-
-        Gracias por preferir HunarPack.        
-        """
-
-        #Función para le envío y notificación el cliente
-        #Asunto, mensaje texto, remitente, [destinatario]
-        send_mail(
-            asunto,
-            mensaje,
-            settings.DEFAULT_FROM_EMAIL,
-            [cotizacion.email],
-            fail_silently=False,
+        msg_cliente = EmailMultiAlternatives(
+            subject=f"Confirmación de Solicitud #{cotizacion.id} - HunarPack B2B",
+            body=f"Hola {cotizacion.nombre_contacto}, hermos recibido tu solicitud #{cotizacion.id}.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[cotizacion.email]
         )
+        msg_cliente.attach_alternative(html_cliente, "text/html")
+        msg_cliente.send(fail_silently=False)
 
-        # Notificación al staff
+        # -- NOTIFICACIÓN AL STAFF --
+
         staff_emails = list(
             User.objects.filter(is_staff=True, is_active=True)
             .exclude(email='')
@@ -385,33 +376,26 @@ def procesar_cotizacion(request):
 
         if staff_emails:
             panel_url = request.build_absolute_uri('/panel/')
-            asunto_staff = f"Nueva Solicitud #{cotizacion.id} - {cotizacion.empresa}"
-            cuerpo_staff = f"""Hola equipo,
-Ha llegado una nueva solicitud de cotización al sistema.
 
-Datos del cliente:
-- Empresa: {cotizacion.empresa}
-- RUT: {cotizacion.rut_empresa or 'No indicado'}
-- Contacto: {cotizacion.nombre_contacto}
-- Email: {cotizacion.email}
-- Teléfono: {cotizacion.telefono}
+            html_staff = render_to_string('catalogo/emails/notificacion_staff.html', {
+                'empresa': cotizacion.empresa,
+                'rut_empresa': cotizacion.rut_empresa or 'No indicado',
+                'nombre_contacto': cotizacion.nombre_contacto,
+                'email_cliente': cotizacion.email,
+                'telefono': cotizacion.telefono,
+                'cotizacion_id': cotizacion.id,
+                'cantidad_productos': cotizacion.detalles.count(),
+                'panel_url': panel_url
+            })
 
-N° de solicitud: #{cotizacion.id}
-Productos solicitados: {cotizacion.detalles.count()}
-
-Ingresa al panel para asignar precios y responder:
-{panel_url}
-
-Saludos,
-Sistema HunarPack B2B
-"""
-            send_mail(
-                asunto_staff,
-                cuerpo_staff,
-                settings.DEFAULT_FROM_EMAIL,
-                staff_emails,
-                fail_silently=True,
+            msg_staff = EmailMultiAlternatives(
+                subject=f"Nueva Solicitud #{cotizacion.id} - {cotizacion.empresa}",
+                body=f"Nueva Solicitud de {cotizacion.empresa}. Revisa el panel.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=staff_emails
             )
+            msg_staff.attach_alternative(html_staff, "text/html")
+            msg_staff.send(fail_silently=True)
         # -----------------------------------------------
 
         # Paso 5. Vaciar (destruir) el carrito temporal de la sesión
@@ -561,51 +545,61 @@ def fijar_precios_cotizacion(request, cotizacion_id):
         cotizacion.estado = 'RESPONDIDA'
         cotizacion.save()
 
-        # Creación del PDF y envío por correo
-        #-------------------------------------
-
-        # Paso 1. Renderizado en HTML del PDF
+        # ==========================================
+        # GENERACIÓN DEL PDF
+        # ==========================================
         template = get_template('catalogo/pdf/pdf_cotizacion.html')
         html = template.render({'cotizacion': cotizacion})
 
-        # Paso 2. Se crea un buffer de memoria para el PDF
+        # Función auxiliar para que xhtml2pdf encuentre las imágenes estáticas
+        def link_callback(uri, rel):
+            import os
+            from django.conf import settings
+            from django.contrib.staticfiles import finders
+            
+            # Si la ruta empieza con /static/, usamos finders para encontrarla
+            if uri.startswith(settings.STATIC_URL):
+                relative_path = uri.replace(settings.STATIC_URL, "")
+                absolute_path = finders.find(relative_path)
+                if absolute_path:
+                    return absolute_path
+            return uri
+        
         pdf_buffer = io.BytesIO()
-        pisa_status = pisa.CreatePDF(html, dest=pdf_buffer)
+        pisa_status = pisa.CreatePDF(html, dest=pdf_buffer, link_callback=link_callback)
 
         if not pisa_status.err:
-            # se retorna al ainicio del buffer para leerlo
             pdf_buffer.seek(0)
 
-            # Paso 3. Se envía el correo al cliente con el PDF adjunto.
-            asunto_cliente = f"Cotización N° {cotizacion.id} - HunarPack B2B"
+            # ==========================================
+            # ENVÍO DEL CORREO HTML AL CLIENTE CON PDF
+            # ==========================================
             nombre_ejecutivo = f"{cotizacion.ejecutivo.first_name} {cotizacion.ejecutivo.last_name}".strip() or cotizacion.ejecutivo.username
-            cuerpo_cliente = f"""Hola {cotizacion.nombre_contacto},
             
-Adjunto encontrarás la cotización formal para {cotizacion.empresa}, con los valores vigentes solicitados.
+            # Renderizamos la plantilla HTML del correo
+            html_cliente = render_to_string('catalogo/emails/respuesta_cliente.html', {
+                'nombre_contacto': cotizacion.nombre_contacto,
+                'empresa': cotizacion.empresa,
+                'total': f"{cotizacion.total:,}".replace(',', '.'),
+                'dias_validez': cotizacion.dias_validez,
+                'nombre_ejecutivo': nombre_ejecutivo,
+                'email_ejecutivo': cotizacion.ejecutivo.email
+            })
 
-Resumen:
-- Cotizacion N°: {cotizacion.id}
-- Total Final (IVA incluído): ${cotizacion.total}
-- Días de validez: {cotizacion.dias_validez}
-
-Si tienes alguna duda, puedes contactar a tu ejecutivo asignado: {nombre_ejecutivo}
-{cotizacion.ejecutivo.email}
-
-Gracias por preferir HunarPack.
-"""
-            email_cliente = EmailMessage(
-                asunto_cliente,
-                cuerpo_cliente,
-                settings.DEFAULT_FROM_EMAIL,
-                [cotizacion.email],
+            # Usamos EmailMultiAlternatives para enviar HTML + Adjunto
+            msg_cliente = EmailMultiAlternatives(
+                subject=f"Cotización N° {cotizacion.id} - HunarPack B2B",
+                body=f"Hola {cotizacion.nombre_contacto}, adjuntamos tu cotización formal.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[cotizacion.email]
             )
-            email_cliente.attach(
+            msg_cliente.attach_alternative(html_cliente, "text/html")
+            msg_cliente.attach(
                 f"Cotizacion_Hunarpack_{cotizacion.id}.pdf",
                 pdf_buffer.getvalue(),
                 'application/pdf'
             )
-            email_cliente.send(fail_silently=False)
-
+            msg_cliente.send(fail_silently=False)
 
         messages.success(request, f"¡Cotización #{cotizacion.id} respondida y enviada al cliente por correo!")
         return redirect('dashboard')
