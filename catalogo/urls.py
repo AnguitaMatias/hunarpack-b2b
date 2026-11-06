@@ -3,21 +3,21 @@ from django.contrib.auth import views as auth_views
 from . import views
 
 urlpatterns = [
-    # Rutas generales
+    # --- RUTAS GENERALES ---
     path('', views.landing_page, name='landing_page'),
     path('catalogo/', views.lista_categorias, name='lista_categorias'),
     path('catalogo/categoria/<int:categoria_id>/', views.lista_productos, name='lista_productos'),
     path('producto/<int:producto_id>', views.detalle_producto, name='detalle_producto'),
 
-    # Rutas del carro y checkout
-     path('api/carrito/agregar/', views.agregar_al_carrito, name='agregar_al_carrito'),
+    # --- RUTAS DEL CARRO Y CHECKOUT ---
+    path('api/carrito/agregar/', views.agregar_al_carrito, name='agregar_al_carrito'),
     path('carrito/', views.resumen_carrito, name='resumen_carrito'),
     path('api/carrito/actualizar/', views.actualizar_carrito, name='actualizar_carrito'),
     path('checkout/procesar/', views.procesar_cotizacion, name='procesar_cotizacion'),
     path('cotizacion/<int:cotizacion_id>/pdf/', views.generar_pdf_cotizacion, name='generar_pdf_cotizacion'),
     path('cotizacion/repetir/<int:cotizacion_id>', views.repetir_cotizacion, name='repetir_cotizacion'),
     
-    # Portal de clientes
+    # --- PORTAL DEL CLIENTE ---
     path('login/', auth_views.LoginView.as_view(template_name='catalogo/auth/login.html'), name='login'),
     path('logout/', views.salir, name='logout'),
     path('mi-historial/', views.mi_historial, name='mi_historial'),
@@ -25,7 +25,7 @@ urlpatterns = [
     path('cambiar-clave/', views.CambiarContrasena.as_view(), name='cambiar_clave'),
     path('mi-perfil/', views.mi_perfil, name='mi_perfil'),
 
-    # Flujo para recuperación de contraseñas olvidadas (Exclusivo clientes)
+    # --- FLUJO CONTRASEÑA OLVIDADA ---
     path('reiniciar-password/', auth_views.PasswordResetView.as_view(
         template_name='catalogo/auth/password_reset_form.html',
         email_template_name='catalogo/password_reset_email.html',
@@ -43,7 +43,7 @@ urlpatterns = [
         template_name='catalogo/auth/password_reset_complete.html'
     ), name='password_reset_complete'),
 
-    # Panel Admin
+    # --- PANEL DEL ADMIN ---
     path('panel/', views.dashboard, name='dashboard'),
     path('panel/cotizacion/<int:cotizacion_id>/precios/', views.fijar_precios_cotizacion, name='fijar_precios'),
     path('panel/personal/', views.gestion_personal, name='gestion_personal'),
@@ -51,4 +51,21 @@ urlpatterns = [
     path('panel/personal/eliminar/<int:user_id>/', views.eliminar_staff, name='eliminar_staff'),
     path('panel/simular/', views.simular_cotizacion, name='simular_cotizacion'),
     path('panel/cotizacion/<int:cotizacion_id>/eliminar/', views.eliminar_cotizacion, name='eliminar_cotizacion'),
+
+    # --- CRUD DEL CATÁLOGO ---
+
+    # == CATEGORIAS
+    path('panel/categorias/', views.lista_categorias_admin, name='lista_categorias_admin'),
+    path('panel/categorias/eliminar/<int:categoria_id>/', views.eliminar_categoria, name='eliminar_categoria'),
+    path('panel/categorias/editar/<int:categoria_id>/', views.editar_categoria, name='editar_categoria'),
+    # == PRODUCTO
+    path('panel/catalogo/', views.lista_productos_admin, name='lista_productos_admin'),
+    path('panel/catalogo/crear/', views.crear_producto, name='crear_producto'),
+    path('panel/catalogo/editar/<int:producto_id>/', views.editar_producto, name='editar_producto'),
+    # == VARIANTES
+    path('panel/catalogo/<int:producto_id>/variantes/', views.gestionar_variantes, name='gestionar_variantes'),
+    path('panel/catalogo/variantes/eliminar/<int:variante_id>/', views.eliminar_variante, name='eliminar_variante'),
+    path('panel/catalogo/variante/editar/<int:variante_id>/', views.editar_variante, name='editar_variante'),
+    path('panel/catalogo/variante/<int:variante_id>/imagenes/', views.gestionar_imagenes_variante, name='gestionar_imagenes_variante'),
+    path('panel/catalogo/imagen/eliminar/<int:imagen_id>/', views.eliminar_imagen_variante, name='eliminar_imagen_variante'),
 ]

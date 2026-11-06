@@ -2,16 +2,16 @@ import json
 import io
 import random
 
-from .forms import RegistroClienteForm
+from .forms import RegistroClienteForm, CategoriaForm, ProductoForm, VarianteProductoForm, ImagenVarianteForm
 from .models import Producto, Categoria, Cotizacion, DetalleCotizacion, ReservarStock, VarianteProducto, ImagenVariante
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.admin.views.decorators import staff_member_required as staff_login
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.contrib.auth import logout, login as auth_login
 from django.contrib.auth.views import PasswordChangeView
-from django.core.mail import send_mail, EmailMessage, EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
@@ -22,7 +22,7 @@ from django.utils import timezone
 from datetime import timedelta
 from xhtml2pdf import pisa
 
-# -- LANDING --
+# == LANDING ==
 def landing_page(request):
    # Se filtran productos con una variante al menos qeu tenga stock
    # .distinct() para evitar duplicidad de variantes del mismo producto
@@ -35,7 +35,7 @@ def landing_page(request):
        'productos_destacados': productos_destacados
    })
 
-# -- VISTA DE PRODUCTOS --
+# == VISTA DE PRODUCTOS ==
 def lista_categorias(request):
     categorias = Categoria.objects.all()
     query = request.GET.get('q')
@@ -93,7 +93,7 @@ def detalle_producto(request, producto_id):
         'variantes': variantes
     })
 
-# -- LÓGICA RESERVA DE STOCK --
+# == LÓGICA RESERVA DE STOCK ==
 def obtener_stock_disponible(variante, session_key_actual):
     # Paso 1. Se calcula cuánto está reservado en otro carritos en la última hora
     limite_tiempo = timezone.now() - timedelta(hours=1)
@@ -121,7 +121,7 @@ def actualizar_reserva(request, variante, cantidad_nueva):
             defaults={'cantidad': cantidad_nueva}
         )
 
-# -- LÓGICA PARA EL CARRO (AGREGAR, RESUMEN Y ACTUALIZAR) --
+# == LÓGICA PARA EL CARRO (AGREGAR, RESUMEN Y ACTUALIZAR) ==
 def agregar_al_carrito(request):
     if request.method == 'POST':
         #Comprobamos los datos que envió JS
@@ -264,8 +264,8 @@ def actualizar_carrito(request):
         })
     return JsonResponse({'status': 'error'}, status=400)
 
-# -- LÓGICA PARA LAS COTIZACIONES --
-@login_required(login_url='/login/')
+# == LÓGICA PARA LAS COTIZACIONES ==
+@login_required
 def repetir_cotizacion(request, cotizacion_id):
     # Se recupera la cotización antigua (comprobando que le pertenece al usuario)
     cotizacion_antigua = get_object_or_404(Cotizacion, id=cotizacion_id, usuario=request.user)
@@ -349,7 +349,7 @@ def procesar_cotizacion(request):
         cotizacion.total = 0
         cotizacion.save()
 
-        # -- CORREO DE CONFIRMACIÓN AL CLIENTE --
+        # == CORREO DE CONFIRMACIÓN AL CLIENTE ==
 
         html_cliente  = render_to_string('catalogo/emails/confirmacion_cliente.html', {
             'nombre_contacto': cotizacion.nombre_contacto,
@@ -366,7 +366,7 @@ def procesar_cotizacion(request):
         msg_cliente.attach_alternative(html_cliente, "text/html")
         msg_cliente.send(fail_silently=False)
 
-        # -- NOTIFICACIÓN AL STAFF --
+        # == NOTIFICACIÓN AL STAFF ==
 
         staff_emails = list(
             User.objects.filter(is_staff=True, is_active=True)
@@ -396,7 +396,7 @@ def procesar_cotizacion(request):
             )
             msg_staff.attach_alternative(html_staff, "text/html")
             msg_staff.send(fail_silently=True)
-        # -----------------------------------------------
+        # ==============================================-
 
         # Paso 5. Vaciar (destruir) el carrito temporal de la sesión
         del request.session['carrito']
@@ -409,33 +409,36 @@ def procesar_cotizacion(request):
 
     return redirect('lista_categorias')
 
-@staff_member_required
+@staff_login
 def generar_pdf_cotizacion(request, cotizacion_id):
-    # Recuperamos la cotización del cliente desde la bd
-    try:
-        cotizacion = Cotizacion.objects.get(id=cotizacion_id)
-    except Cotizacion.DoesNotExist:
-        return HttpResponse("La cotización no existe.", status=404)
-
-    # Pasamos los datos de la cotización a la plantilla HTML
+    cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
     template = get_template('catalogo/pdf/pdf_cotizacion.html')
-    context = {'cotizacion': cotizacion}
-    html = template.render(context)
+    html = template.render({'cotizacion': cotizacion})
 
-    # La respuesta se prepara como un archivo PDF descargable
+    # 1. Función para que xhtml2pdf encuentre el logo
+    def link_callback(uri, rel):
+        from django.contrib.staticfiles import finders
+        from django.conf import settings
+        if settings.STATIC_URL in uri:
+            relative_path = uri.split(settings.STATIC_URL)[-1]
+            absolute_path = finders.find(relative_path)
+            if absolute_path:
+                return absolute_path
+        return uri
+
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="Cotizacion_Hunarpack_{cotizacion.id}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="Cotizacion_{cotizacion.id}.pdf'
 
-    # Se convierte el HTML a PDF
-    pisa_status = pisa.CreatePDF(html, dest=response)
+    # 2. Se pasaa al creador del PDF
+    pisa_status = pisa.CreatePDF(html, dest=response, link_callback=link_callback)
 
     if pisa_status.err:
-        return HttpResponse('Hubo un error al generar el PDF', status=500)
-
+        return HttpResponse('Error al generar el PDF', status=500)
     return response
 
-# -- INTERFAZ CLIENTES --
-@login_required(login_url='/login/')
+    
+# == INTERFAZ CLIENTES ==
+@login_required
 def mi_historial(request):
     # Se recuperan las id (cotizaciones) asociadas al usuario actua
     cotizaciones = Cotizacion.objects.filter(usuario=request.user).order_by('-fecha_creacion')
@@ -463,7 +466,7 @@ def registro(request):
 
     return render(request, 'catalogo/auth/registro.html', {'form': form})
 
-@login_required(login_url='/login/')
+@login_required
 def mi_perfil(request):
     if request.method == 'POST':
         user = request.user
@@ -491,7 +494,7 @@ class CambiarContrasena(PasswordChangeView):
         return super().form_valid(form)
 
 # DASHBOARD (STAFF / ADMIN)
-@staff_member_required(login_url='/login/')
+@staff_login
 def dashboard(request):
     cotizaciones_pendientes = Cotizacion.objects.filter(estado__in=['PENDIENTE', 'EN_REVISION']).order_by('-fecha_creacion')
     cotizaciones_respondidas = Cotizacion.objects.filter(estado='RESPONDIDA').order_by('-fecha_creacion')
@@ -504,7 +507,7 @@ def dashboard(request):
 
     return render(request, 'catalogo/admin_panel/dashboard.html', contexto)
 
-@staff_member_required(login_url='/login/')
+@staff_login
 def fijar_precios_cotizacion(request, cotizacion_id):
     cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
     detalles = cotizacion.detalles.all()
@@ -551,18 +554,20 @@ def fijar_precios_cotizacion(request, cotizacion_id):
         template = get_template('catalogo/pdf/pdf_cotizacion.html')
         html = template.render({'cotizacion': cotizacion})
 
-        # Función auxiliar para que xhtml2pdf encuentre las imágenes estáticas
+         # Función auxiliar para que xhtml2pdf encuentre las imágenes estáticas
         def link_callback(uri, rel):
-            import os
-            from django.conf import settings
             from django.contrib.staticfiles import finders
+            from django.conf import settings
             
-            # Si la ruta empieza con /static/, usamos finders para encontrarla
-            if uri.startswith(settings.STATIC_URL):
-                relative_path = uri.replace(settings.STATIC_URL, "")
+            # Si la ruta pertenece a los archivos estáticos
+            if settings.STATIC_URL in uri:
+                # Extrae solo la ruta interna (ej: catalogo/img/logo.png)
+                relative_path = uri.split(settings.STATIC_URL)[-1]
+                # Busca la ruta absoluta real en el disco duro
                 absolute_path = finders.find(relative_path)
                 if absolute_path:
                     return absolute_path
+            
             return uri
         
         pdf_buffer = io.BytesIO()
@@ -609,7 +614,7 @@ def fijar_precios_cotizacion(request, cotizacion_id):
         'detalles': detalles
     })
 
-@staff_member_required(login_url='/login/')
+@staff_login
 def eliminar_cotizacion(request, cotizacion_id):
     if request.method != 'POST':
         return redirect('dashboard')
@@ -760,5 +765,181 @@ def simular_cotizacion(request):
     )
     return redirect('dashboard')
 
+# ==== SISTEMA DEL CRUD DEL CATÁLOGO (flujo Categoría -> Productos -> Variantes) ====
+
+# === CATEGORIA ===
+# == CREAR ==
+@staff_login
+def lista_categorias_admin(request):
+    categorias = Categoria.objects.all()
+
+    if request.method == 'POST':
+        form = CategoriaForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Categoría creada exitosamente.")
+            return redirect('lista_categorias_admin')
+    else:
+        form = CategoriaForm
+
+    return render(request, 'catalogo/admin_panel/lista_categorias_admin.html', {
+        'categorias': categorias,
+        'form': form
+    })
+
+# == EDITAR ==
+@staff_login
+def editar_categoria(request, categoria_id):
+    categoria = get_object_or_404(Categoria, id=categoria_id)
+    if request.method == 'POST':
+        # SE USA INSTACE PARA ACTUALIZAR UNA CATEGORIA EXISTENTE.
+        form = CategoriaForm(request.POST, request.FILES, instance=categoria)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Categoría actualizada correctamente.")
+            return redirect('lista_categorias_admin')
+    else:
+        form = CategoriaForm(instance=categoria)
+
+    return render(request, 'catalogo/admin_panel/editar_categoria.html', {
+        'form': form,
+        'categoria': categoria
+    })
+
+# == ELIMINAR ==
+@staff_login
+def eliminar_categoria(request, categoria_id):
+    if request.method == 'POST':
+        categoria = get_object_or_404(Categoria, id=categoria_id)
+        nombre = categoria.nombre
+        categoria.delete() # Esto borra los productos asociados
+        messages.success(request, f"Categoría '{nombre}' eliminada correctamente. (Esto incluye a los productos asociados)")
+    return redirect('lista_categorias_admin')
+
+# === PRODUCTO === 
+@staff_login
+def lista_productos_admin(request):
+    productos = Producto.objects.all().prefetch_related('variantes')
+    return render(request, 'catalogo/admin_panel/lista_productos_admin.html', {
+        'productos': productos
+    })
+
+# == CREAR ==
+@staff_login
+def crear_producto(request):
+    if request.method == 'POST':
+        form = ProductoForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Producto base creado correctamente. Ahora puedes agregarle variantes.")
+            return redirect('lista_productos_admin')
+    else:
+            form = ProductoForm()
+
+    return render(request, 'catalogo/admin_panel/crear_producto.html', {'form': form})
+
+# == EDITAR ==
+@staff_login
+def editar_producto(request, producto_id):
+    producto = get_object_or_404(Producto, id=producto_id)
+    if request.method == 'POST':
+        form = ProductoForm(request.POST, request.FILES, instance=producto)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Producto actualizado correctamente.")
+            return redirect('lista_productos_admin')
+    else:
+        form = ProductoForm(instance=producto)
+    return render(request, 'catalogo/admin_panel/editar_producto.html', {
+        'form': form,
+        'producto': producto
+    })
+
+# == ELIMINAR ==
 
 
+# === VARIANTES ===
+# == CREAR ==
+@staff_login
+def gestionar_variantes(request, producto_id):
+    producto = get_object_or_404(Producto, id=producto_id)
+    variantes = producto.variantes.all()
+
+    if request.method == 'POST':
+        form = VarianteProductoForm(request.POST, request.FILES)
+        if form.is_valid():
+            variante = form.save(commit=False)
+            variante.producto = producto
+            variante.save()
+            messages.success(request, f"Variante '{variante.nombre_variante}' agregada exitosamente.")
+            return redirect('gestionar_variantes', producto_id=producto_id)
+    else:
+        form = VarianteProductoForm()
+
+    return render(request, 'catalogo/admin_panel/gestionar_variantes.html', {
+        'producto': producto,
+        'variantes': variantes,
+        'form': form
+    })
+
+@staff_login
+def gestionar_imagenes_variante(request, variante_id):
+    variante = get_object_or_404(VarianteProducto, id=variante_id)
+    imagenes = variante.imagenes_extra.all()
+
+    if request.method == 'POST':
+        form = ImagenVariante(request.POST, request.FILES)
+        if form.is_valid():
+            imagen = form.save(commit=False)
+            imagen.variante = variante
+            imagen.save()
+            messages.success(request, "Imagen extra agregada al carrusel.")
+            return redirect('gestionar_imagenes_variante', variante_id=variante.id)
+    else:
+        form = ImagenVarianteForm()
+
+    return render(request, 'catalogo/admin_panel/gestionar_imagenes_variante.html', {
+        'variante': variante,
+        'imagenes': imagenes,
+        'form': form
+    })
+
+# == EDITAR ==
+@staff_login
+def editar_variante(request, variante_id):
+    variante = get_object_or_404(VarianteProducto, id=variante_id)
+    if request.method == 'POST':
+        form = VarianteProductoForm(request.POST, request.FILES, instance=variante_id)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Variante actualizada exitosamente.")
+            return redirect('gestionar_variantes', producto_id=variante.producto.id)
+    else:
+        form = VarianteProductoForm(instance=variante)
+
+    return render(request, 'catalogo/admin_panel/editar_variante.html', {
+        'form': form,
+        'variante': variante
+    })
+
+# == ELIMINAR ==
+@staff_login
+def eliminar_variante(request, variante_id):
+    if request.method == 'POST':
+        variante = get_object_or_404(VarianteProducto, id=variante_id)
+        producto_id = variante.producto.id
+        nombre = variante.nombre_variante
+        variante.delete()
+        messages.success(request, f"Variante '{nombre}' eliminada correctamente.")
+        return redirect('gestionar_variantes', producto_id=producto_id)
+    return redirect('lista_productos_admin')
+
+@staff_login
+def eliminar_imagen_variante(request, imagen_id):
+    if request.method == 'POST':
+        imagen = get_object_or_404(ImagenVariante, id=imagen_id)
+        variante_id = imagen.variante.id
+        imagen.delete()
+        messages.success(request, "Imagen eliminado correctamente.")
+        return redirect('gestionar_imagenes_variante', variante_id = variante_id)
+    return redirect('lista_productos_admin')

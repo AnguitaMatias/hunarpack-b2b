@@ -1,0 +1,73 @@
+{% extends 'catalogo/components/base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark"><i class="bi bi-box-seam"></i> Gestión de Catálogo</h2>
+            <p class="text-muted mb-0">Administra los productos base y sus presentaciones.</p>
+        </div>
+        <div>
+            <a href="{% url 'lista_categorias_admin' %}" class="btn btn-outline-dark fw-bold me-2">
+                <i class="bi bi-tags"></i> Categorías
+            </a>
+            <a href="{% url 'crear_producto' %}" class="btn btn-primary fw-bold me-2">
+                <i class="bi bi-plus-circle"></i> Nuevo Producto
+            </a>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Volver al Panel</a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Imagen</th>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th class="text-center">Variantes</th>
+                            <th class="text-end pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for producto in productos %}
+                        <tr>
+                            <td class="ps-4">
+                                {% if producto.imagen %}
+                                    <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">
+                                {% else %}
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                        <i class="bi bi-box text-muted"></i>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ producto.nombre }}</strong>
+                                <small class="text-muted px-2">{{ producto.descripcion|truncatechars:50 }}</small>
+                            </td>
+                            <td><span class="badge bg-secondary">{{ producto.categoria.nombre }}</span></td>
+                            <td class="text-center">
+                                <span class="badge bg-primary rounded-pill">{{ producto.variantes.count }}</span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <a href="{% url 'gestionar_variantes' producto.id %}" class="btn btn-sm btn-outline-success" title="Gestionar Variantes">
+                                    <i class="bi bi-boxes"></i> Variantes
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                No hay productos registrados en el catálogo.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

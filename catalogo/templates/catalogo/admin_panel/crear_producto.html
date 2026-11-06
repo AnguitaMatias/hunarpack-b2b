@@ -1,0 +1,41 @@
+{% extends 'catalogo/components/base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-plus-square"></i> Nuevo Producto</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nombre del Producto</label>
+                            {{ form.nombre }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Categoría</label>
+                            {{ form.categoria }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Descripción General</label>
+                            {{ form.descripcion }}
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Imagen Principal</label>
+                            {{ form.imagen }}
+                            <small class="text-muted">Recomendado: Imagen cuadrada con fondo blanco o transparente.</small>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'lista_productos_admin' %}" class="btn btn-outline-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-primary fw-bold"><i class="bi bi-floppy2"></i> Guardar Producto</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

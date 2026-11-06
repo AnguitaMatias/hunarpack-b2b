@@ -16,7 +16,7 @@ class Categoria(models.Model):
         verbose_name_plural = "Categorías"
 
 class Producto(models.Model):
-    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, related_name='productos')
+    categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, blank=True, related_name='productos')
     nombre = models.CharField(max_length=200, verbose_name="Nombre del Producto Base")
     descripcion = models.TextField(blank=True, verbose_name="Descripción General")
     imagen = models.ImageField(upload_to='productos/', blank=True, null=True, verbose_name="Imagen Principal del Producto")

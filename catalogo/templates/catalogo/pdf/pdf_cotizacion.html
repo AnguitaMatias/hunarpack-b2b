@@ -56,9 +56,10 @@
         }
 
         .items-table td {
-            padding: 10px;
+            padding: 10px 8px;
             border: 1px solid #D1D8D0;
             background-color: #FFFFFF;
+            vertical-align: middle;
         }
 
         /* Tabla de totales */
@@ -137,9 +138,13 @@
                 <td class="bold" style="color: #6B7A69;">Ejecutivo:</td>
                 <td>
                     {% if cotizacion.ejecutivo %}
-                    {{ cotizacion.ejecutivo.first_name }} {{ cotizacion.ejecutivo.last_name }}
+                        {% if cotizacion.ejecutivo.first_name or cotizacion.ejecutivo.last_name %}
+                            {{ cotizacion.ejecutivo.first_name }} {{ cotizacion.ejecutivo.last_name }}
+                        {% else %}
+                            {{ cotizacion.ejecutivo.username }}
+                        {% endif %}
                     {% else %}
-                    Ventas Web
+                        Ventas Web
                     {% endif %}
                 </td>
             </tr>
@@ -201,9 +206,13 @@
             <th>IVA (19%):</th>
             <td class="text-right">${{ cotizacion.iva|peso }}</td>
         </tr>
-        <tr class="total-final">
-            <th style="color: white; border: none;">TOTAL FINAL:</th>
-            <td class="text-right bold" style="font-size: 14px; border: none;">${{ cotizacion.total|peso }}</td>
+        <tr>
+            <th bgcolor="#2F3E2A" style="background-color: #2F3E2A; color: white; border: 1px solid #2F3E2A; padding: 10px; text-align: left;">
+                TOTAL FINAL:
+            </th>
+            <td bgcolor="#2F3E2A" class="text-right bold" style="background-color: #2F3E2A; color: white; font-size: 14px; border: 1px solid #2F3E2A; padding: 10px; text-align: right;">
+                ${{ cotizacion.total|peso }}
+            </td>
         </tr>
     </table>
 

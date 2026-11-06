@@ -1,0 +1,108 @@
+{% extends 'catalogo/components/base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    {# === HEADER === #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark">Variantes de: {{ producto.nombre }}</h2>
+            <p class="text-muted mb-0">Categoría: {{ producto.categoria.nombre }}</p>
+        </div>
+        <a href="{% url 'lista_productos_admin' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al Catálogo
+        </a>
+    </div>
+
+    <div class="row">
+        {# === FORMULARIO DE CREACION DE VARIANTES (IZQUIERDA) === #}
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-plus-square"></i> Nueva Variante</h5>
+                </div>
+                <div class="card-body bg-light">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-12">{{ form.codigo.label_tag }} {{ form.codigo }}</div>
+                            <div class="col-12">{{ form.nombre_variante.label_tag }} {{ form.nombre_variante }}</div>
+                            <div class="col-6">{{ form.precio.label_tag }} {{ form.precio }}</div>
+                            <div class="col-6">{{ form.unidades_por_caja.label_tag }} {{ form.unidades_por_caja }}</div>
+                            <div class="col-6">{{ form.stock_actual.label_tag }} {{ form.stock_actual }}</div>
+                            <div class="col-6">{{ form.stock_minimo.label_tag }} {{ form.stock_minimo }}</div>
+                            <div class="col-12">{{ form.dimensiones.label_tag }} {{form.dimensiones}}</div>
+                            <div class="col-12">{{ form.material.label_tag }} {{ form.material }}</div>
+                            <div class="col-12">{{ form.presentacion.label_tag }} {{ form.presentacion }}</div>
+                            <div class="col-12">{{ form.imagen_principal.label_tag }} {{ form.imagen_principal }}</div>
+                            <div class="col-12">{{ form.nota.label_tag }} {{ form.nota }}</div>
+                            <div class="col-6 form-check ms-3">
+                                {{ form.apto_microondas }} <label class="form-check-label small">Microondas</label>
+                            </div>
+                            <div class="col-5 form-check">
+                                {{ form.es_ecologico }} <label class="form-check-label small">Ecológico</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-btn-primary w-100 fw-bold mt-4"><i class="bi bi-floppy2"></i>
+                            Guardar Variante</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {# === TABLA DE VARIANTES EXISTENTES (DERECHA) === #}
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Código</th>
+                                    <th>Nombre Variante</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th class="text-end pe-4">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for v in variantes %}
+                                <tr>
+                                    <td class="ps-4 fw-bold">{{ v.codigo }}</td>
+                                    <td>{{ v.nombre_variante }}</td>
+                                    <td>${{ v.precio }}</td>
+                                    <td>
+                                        {% if v.stock_actual <= 0 %} <span class="badge bg-danger">Agotado</span>
+                                            {% else %}
+                                            {{ v.stock_actual }} un.
+                                            {% endif %}
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        {# === BOTÓN DE LA GALERÍA === #}
+                                        <a href="{% url 'gestionar_imagenes_variante' v.id %}"
+                                            class="btn btn-outline-primary" title="Gestionar Imágenes Extras"><i
+                                                class="bi bi-images"></i></a>
+                                        {# === FORMULARIO PARA ELIMINAR === #}
+                                        <form method="POST" action="{% url 'eliminar_variante' v.id %}" class="d-inline"
+                                            onsubmit="return confirm('¿Seguro que deseas eliminar esta variante?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                title="Eliminar Variante"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">
+                                        Este producto aún no tiene variantes. Agrega la primera usando el formulario.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'catalogo/components/base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark">Galería del Carrusel</h2>
+            <p class="text-muted mb-0">Variante: <strong>{{ variante.nombre_variante }}</strong> ({{ variante.codigo }})
+            </p>
+        </div>
+        <a href="{% url 'gestionar_variantes' variante.producto.id %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver a las Variantes
+        </a>
+    </div>
+
+    <div class="row">
+        {# === FORMULARIO PARA LA SUBIDA === #}
+        <div class="col-md-4 mb 4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-image"></i> Subir Nueva Imagen</h5>
+                </div>
+                <div class="card-body bg-light">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Selecciona una imagen</label>
+                            {{ form.imagen }}
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 fw-bold">Agregar a la Galería</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {# === GALERÍA ACTUAL === #}
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold border-bottom pb-2 mb-4">Imágenes en el carrusel</h5>
+                    <div class="row row-cols-1 row-cols-md-3 g-3">
+                        {% for img in imagenes %}
+                        <div class="col">
+                            <div class="card h-100 border">
+                                <img src="{{ img.imagen.url }}" alt="Imagen extra" class="card-img-top p-2"
+                                    style="height: 150px; object-fit: contain;">
+                                <div class="card-footer bg-white text-center border-0">
+                                    <form method="POST" action="{% url 'eliminar_imagen_variante' img.id %}"
+                                        onsubmit="return confirm('¿Eliminar esta imagen?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                                            <i class="bi bi-trash"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <div class="alert alert-warning" >
+                                <i class="bi bi-exclamation-triangle"></i> Esta variante aún no tiene imágenes en el
+                                carrusel. La imagen principal será la única que se muestre.
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
