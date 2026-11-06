@@ -4,83 +4,78 @@
 <div class="container mt-4 mb-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold text-dark"><i class="bi bi-tags"></i> Gestión de Categorías</h2>
-            <p class="text-muted mb-0">Crea aquí las familias de productos para organizar tu catálogo.</p>
+            <h2 class="fw-bold text-dark"><i class="bi bi-grid"></i> Gestión del Catálogo</h2>
+            <p class="text-muted mb-0">Selecciona una categoría para gestionar sus productos.</p>
         </div>
         <div>
-            <a href="{% url 'lista_productos_admin' %}" class="btn btn-outline-secondary me-2">Ir a Productos</a>
-            <a href="{% url 'dashboard' %}" class="btn btn-outline-dark">Volver al Panel</a>
+            <a href="{% url 'crear_producto' %}" class="btn btn-outline-secondary fw-bold me-2">Crear Producto (Sin Cat.)</a>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Volver al Dashboard</a>
         </div>
     </div>
 
-    <div class="row">
-        {# === FORMULARIO PARA LA CREACIÓN DE CATEGORÍAS (IZQUIERDA) === #}
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-dark text-white py-3">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-plus-square"></i> Nueva Categoría</h5>
+    {# === BOTÓN PARA CREAR CATEGORÍAS ===  #}
+    <div class="mb-4">
+        <a href="{% url 'crear_categoria' %}" class="btn btn-primary fw-bold"><i class="bi bi-plus-circle"></i> Nueva Categoría</a>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+        {% for cat in categorias %}
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="position-relative" style="height: 160px;">
+                    {% if cat.imagen %}
+                        <img src="{{ cat.imagen.url }}" alt="{{ cat.nombre }}" class="w-100 h-100 rounded-top" style="object-fit: cover;">
+                    {% else %}
+                        <div class="w-100 h-100 rounded-top d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #7BA356 0%, #538A86 100%);">
+                            <i class="bi bi-tag text-white display-4"></i>
+                        </div>
+                    {% endif %}
                 </div>
-                <div class="card-body bg-light">
-                    <form method="POST" enctype="multipart/form-data">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold mb-1">{{ cat.nombre }}</h5>
+                    <p class="card-text text-muted small">{{ cat.producto.count }} productos</p>
+                </div>
+                <div class="card-footer bg-white border-0 d-flex justify-content-between pb-3">
+                    <a href="{% url 'editar_categoria' cat.id %}" class="btn btn-sm btn-outline-primary" title="Editar"><i class="bi bi-pencil"></i></a>
+                    <form method="POST" action="{% url 'eliminar_categoria' cat.id %}" class="d-inline" onsubmit="return confirm('¿Eliminar categoría?. Los productos asociados quedarán son categoría.');">
                         {% csrf_token %}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Nombre de la Categoría</label>
-                            {{ form.nombre }}
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Imagen</label>
-                            {{ form.imagen }}
-                            <small class="text-muted">Se usará como fondo en la vista principal del catálogo.</small>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 fw-bold"><i class="bi bi-floppy2"></i> Guardar Categoría</button>
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                     </form>
+                    <a href="{% url 'lista_productos_por_categoria' cat.id %}" class="btn btn-sm btn-success fw-bold" title="Revisar Productos">
+                        Revisar <i class="bi bi-arrow-right"></i>
+                    </a>
                 </div>
             </div>
         </div>
-
-        {# === LISTA DE CATEGORÍAS CREADAS (DERECHA) === #}
-        <div class="col-md-8">
-            <div class="row row-cols-1 row-cols-md-2 g 3">
-                {% for cat in categorias %}
-                <div class="col">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="row g-0 h-100">
-                            <div class="col-4">
-                                {% if cat.imagen %}
-                                    <img src="{{ cat.imagen.url }}" alt="{{ cat.nombre }}" class="img-fluid rounded-start h-100" style="object-fit: cover;">
-                                {% else %}
-                                    <div class="bg-secondary h-100 d-flex align-items-center justify-content-center rounded-start">
-                                        <i class="bi bi-tag text-white fs-3"></i>
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="col-8">
-                                <div class="card-body d-flex flex-column h-100">
-                                    <h5 class="card-title fw-bold mb-1">{{ cat.nombre }}</h5>
-                                    <p class="card-text text-muted small mb-3">{{ cat.productos.count }} productos asociados</p>
-
-                                    <div class="mt-auto text-end">
-                                        <form method="POST" action="{% url 'eliminar_categoria' cat.id %}" class="d-inline" onsubmit="return confirm('¿Está seguro? Al eliminar esta categoría, también se eliminarán TODOS los productos dentro de ella.');">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar Categoría">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% empty %}
-                <div class="col-12">
-                    <div class="alert alert-info text-center">
-                        Aún no hay categorías creadas. Esa el formulario de la izquierda para empezar.
-                    </div>
-                </div>
-                {% endfor %}
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                Aún no hay categorías. Crea la primera arriba.
             </div>
         </div>
+        {% endfor %}
     </div>
+
+    {# === SECCIÓN PARA PRODUCTOS SIN CATEGORÍA === #}
+    {% if productos_sin_categoria %}
+    <hr class="my-5">
+    <h4 class="fw-bold text-dark mb-4"><i class="bi bi-box-seam"></i>  Productos Sin Categoría Asignada</h4>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for prod in productos_sin_categoria %}
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="fw-bold">{{ prod.nombre }}</h5>
+                    <p class="text-muted small">{{ prod.descripcion|truncatechars:60 }}</p>
+                </div>
+                <div class="card-footer bg-white border-0 pb-3 d-flex justify-content-between">
+                    <a href="{% url 'editar_producto' prod.id %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                    <a href="{% url 'gestionar_variantes' prod.id %}" class="btn btn-sm-btn-outline-secondary"><i class="bi bi-boxes"></i> Variantes</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

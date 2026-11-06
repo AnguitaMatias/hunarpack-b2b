@@ -1,0 +1,39 @@
+{% extends 'catalogo/components/base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square"></i> Editar Categoría: {{ categoria.nombre
+                        }}</h5>
+                </div>
+                <div class="card-body bg-light">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nombre de la Categoría</label>
+                            {{ form.nombre }}
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Imagen de Fondo</label><br>
+                            {% if categoria.imagen %}
+                            <img src="{{ categoria.imagen.url }}" style="height: 80px;" class="mb-2 rounded shadow-sm">
+                            {% else %}
+                            <p class="text-muted small">No hay imagen actual.</p>
+                            {% endif %}
+                            {{ form.imagen }}
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'lista_categorias_admin' %}" class="btn btn-outline-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-primary fw-bold"><i class="bi bi-save"></i> Guardar
+                                Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

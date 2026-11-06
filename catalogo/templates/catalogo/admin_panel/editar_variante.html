@@ -1,0 +1,60 @@
+{% extends 'catalogo/components/base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square"></i> Editar Variante: {{ variante.codigo }}
+                    </h5>
+                </div>
+                <div class="card-body bg-light">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">{{ form.codigo.label_tag }} {{ form.codigo }}</div>
+                            <div class="col-md-6">{{ form.nombre_variante.label_tag }} {{ form.nombre_variante }}</div>
+
+                            <div class="col-md-4">{{ form.precio.label_tag }} {{ form.precio }}</div>
+                            <div class="col-md-4">{{ form.stock_actual.label_tag }} {{ form.stock_actual }}</div>
+                            <div class="col-md-4">{{ form.stock_minimo.label_tag }} {{ form.stock_minimo }}</div>
+
+                            <div class="col-md-6">{{ form.unidades_por_caja.label_tag }} {{ form.unidades_por_caja }}
+                            </div>
+                            <div class="col-md-6">{{ form.dimensiones.label_tag }} {{ form.dimensiones }}</div>
+
+                            <div class="col-md-6">{{ form.material.label_tag }} {{ form.material }}</div>
+                            <div class="col-md-6">{{ form.presentacion.label_tag }} {{ form.presentacion }}</div>
+
+                            <div class="col-12">{{ form.nota.label_tag }} {{ form.nota }}</div>
+
+                            <div class="col-md-12 mt-3">
+                                <label class="form-label fw-bold">Imagen Principal de la Variante</label><br>
+                                {% if variante.imagen_principal %}
+                                <img src="{{ variante.imagen_principal.url }}" style="height: 80px;"
+                                    class="mb-2 rounded shadow-sm">
+                                {% endif %}
+                                {{ form.imagen_principal }}
+                            </div>
+
+                            <div class="col-md-6 form-check ms-3 mt-4">
+                                {{ form.apto_microondas }} <label class="form-check-label">Microondas</label>
+                            </div>
+                            <div class="col-md-5 form-check mt-4">
+                                {{ form.es_ecologico }} <label class="form-check-label">Ecológico</label>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'gestionar_variantes' variante.producto.id %}"
+                                class="btn btn-outline-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-primary fw-bold"><i class="bi bi-save"></i> Guardar
+                                Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

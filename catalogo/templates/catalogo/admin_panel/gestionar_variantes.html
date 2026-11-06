@@ -8,7 +8,7 @@
             <h2 class="fw-bold text-dark">Variantes de: {{ producto.nombre }}</h2>
             <p class="text-muted mb-0">Categoría: {{ producto.categoria.nombre }}</p>
         </div>
-        <a href="{% url 'lista_productos_admin' %}" class="btn btn-outline-secondary">
+        <a href="{% url 'lista_categorias_admin' %}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Volver al Catálogo
         </a>
     </div>
@@ -42,7 +42,7 @@
                                 {{ form.es_ecologico }} <label class="form-check-label small">Ecológico</label>
                             </div>
                         </div>
-                        <button type="submit" class="btn-btn-primary w-100 fw-bold mt-4"><i class="bi bi-floppy2"></i>
+                        <button type="submit" class="btn btn-primary w-100 fw-bold mt-4"><i class="bi bi-floppy2"></i>
                             Guardar Variante</button>
                     </form>
                 </div>
@@ -77,10 +77,16 @@
                                             {% endif %}
                                     </td>
                                     <td class="text-end pe-4">
+                                        {# === BOTÓN DE EDITAR === #}
+                                        <a href="{% url 'editar_variante' v.id %}"
+                                            class="btn btn-sm btn-outline-primary" title="Editar Variante"><i
+                                                class="bi bi-pencil"></i></a>
+                                        
                                         {# === BOTÓN DE LA GALERÍA === #}
                                         <a href="{% url 'gestionar_imagenes_variante' v.id %}"
-                                            class="btn btn-outline-primary" title="Gestionar Imágenes Extras"><i
+                                            class="btn btn-sm btn-outline-info" title="Gestionar Imágenes Extras"><i
                                                 class="bi bi-images"></i></a>
+                                        
                                         {# === FORMULARIO PARA ELIMINAR === #}
                                         <form method="POST" action="{% url 'eliminar_variante' v.id %}" class="d-inline"
                                             onsubmit="return confirm('¿Seguro que deseas eliminar esta variante?');">

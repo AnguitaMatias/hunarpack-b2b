@@ -55,7 +55,8 @@ def lista_categorias(request):
             'total_productos': sum(request.session.get('carrito', {}).values())
         })
     return render(request, 'catalogo/client/lista_categorias.html', {
-        'categorias': categorias
+        'categorias': categorias,
+        'productos_sin_categoria': Producto.objects.filter(categoria__isnull=True)
     })
 
 def lista_productos(request, categoria_id):
@@ -768,26 +769,33 @@ def simular_cotizacion(request):
 # ==== SISTEMA DEL CRUD DEL CATÁLOGO (flujo Categoría -> Productos -> Variantes) ====
 
 # === CATEGORIA ===
-# == CREAR ==
 @staff_login
 def lista_categorias_admin(request):
     categorias = Categoria.objects.all()
-
-    if request.method == 'POST':
-        form = CategoriaForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Categoría creada exitosamente.")
-            return redirect('lista_categorias_admin')
-    else:
-        form = CategoriaForm
+    productos_sin_categoria = Producto.objects.filter(categoria__isnull=True)
 
     return render(request, 'catalogo/admin_panel/lista_categorias_admin.html', {
         'categorias': categorias,
+        'productos_sin_categoria': productos_sin_categoria
+    })
+
+# CREAR
+@staff_login
+def crear_categoria(request):
+    if request.method == 'POST':
+            form = CategoriaForm(request.POST, request.FILES)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Categoría creada exitosamente.")
+                return redirect('lista_categorias_admin')
+    else:
+        form = CategoriaForm
+
+    return render(request, 'catalogo/admin_panel/crear_categoria.html', {
         'form': form
     })
 
-# == EDITAR ==
+# EDITAR 
 @staff_login
 def editar_categoria(request, categoria_id):
     categoria = get_object_or_404(Categoria, id=categoria_id)
@@ -806,39 +814,57 @@ def editar_categoria(request, categoria_id):
         'categoria': categoria
     })
 
-# == ELIMINAR ==
+# ELIMINAR
 @staff_login
 def eliminar_categoria(request, categoria_id):
     if request.method == 'POST':
         categoria = get_object_or_404(Categoria, id=categoria_id)
         nombre = categoria.nombre
-        categoria.delete() # Esto borra los productos asociados
-        messages.success(request, f"Categoría '{nombre}' eliminada correctamente. (Esto incluye a los productos asociados)")
+        categoria.delete()
+        messages.success(request, f"Categoría '{nombre}' eliminada correctamente. (Los productos quedarán sin categoría.)")
     return redirect('lista_categorias_admin')
 
-# === PRODUCTO === 
+# === PRODUCTOS === 
 @staff_login
-def lista_productos_admin(request):
-    productos = Producto.objects.all().prefetch_related('variantes')
+def lista_productos_admin(request, categoria_id=None):
+    if categoria_id:
+        categoria_actual = get_object_or_404(Categoria, id=categoria_id)
+        productos = Producto.objects.filter(categoria=categoria_actual)
+    else:
+        categoria_actual = None
+        productos = Producto.objects.filter(categoria__isnull=True)
+    
     return render(request, 'catalogo/admin_panel/lista_productos_admin.html', {
-        'productos': productos
+        'productos': productos,
+        'categoria_actual': categoria_actual
     })
 
-# == CREAR ==
+# CREAR 
 @staff_login
 def crear_producto(request):
+    cat_id = request.GET.get('categoria')
+
     if request.method == 'POST':
         form = ProductoForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, "Producto base creado correctamente. Ahora puedes agregarle variantes.")
+
+            # Se redirege a la lista de productos de la categoría si es que se créo desde ahí
+            producto_creado = form.instance
+            if producto_creado.categoria:
+                return redirect('lista_productos_por_categoria', categoria_id=producto_creado.categoria.id)
             return redirect('lista_productos_admin')
     else:
+        # Si viene desde una categoría, se inicial el formulario con esa categoría.
+        if cat_id:
+            form = ProductoForm(initial={'categoria': cat_id})
+        else:
             form = ProductoForm()
 
     return render(request, 'catalogo/admin_panel/crear_producto.html', {'form': form})
 
-# == EDITAR ==
+# EDITAR
 @staff_login
 def editar_producto(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
@@ -847,19 +873,33 @@ def editar_producto(request, producto_id):
         if form.is_valid():
             form.save()
             messages.success(request, "Producto actualizado correctamente.")
+            if producto.categoria:
+                return redirect('lista_productos_por_categoria', categoria_id=producto.categoria.id)
             return redirect('lista_productos_admin')
     else:
         form = ProductoForm(instance=producto)
+        
     return render(request, 'catalogo/admin_panel/editar_producto.html', {
         'form': form,
         'producto': producto
     })
+# ELIMINAR
+def eliminar_producto(request, producto_id):
+    if request.method == 'POST':
+        producto = get_object_or_404(Producto, id=producto_id)
+        cat_id = producto.categoria.id if producto.categoria else None
+        nombre = producto.nombre
+        producto.delete()
+        messages.success(request, f"Producto '{nombre}' eliminado correctamente.")
 
-# == ELIMINAR ==
+        if cat_id:
+            return redirect('lista_productos_por_categoria', categoria_id=cat_id)
+        return redirect('lista_productos_admin')
+    return redirect('lista_categorias_admin')
 
 
 # === VARIANTES ===
-# == CREAR ==
+# CREAR 
 @staff_login
 def gestionar_variantes(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
@@ -904,12 +944,12 @@ def gestionar_imagenes_variante(request, variante_id):
         'form': form
     })
 
-# == EDITAR ==
+# EDITAR
 @staff_login
 def editar_variante(request, variante_id):
     variante = get_object_or_404(VarianteProducto, id=variante_id)
     if request.method == 'POST':
-        form = VarianteProductoForm(request.POST, request.FILES, instance=variante_id)
+        form = VarianteProductoForm(request.POST, request.FILES, instance=variante)
         if form.is_valid():
             form.save()
             messages.success(request, "Variante actualizada exitosamente.")
@@ -922,7 +962,7 @@ def editar_variante(request, variante_id):
         'variante': variante
     })
 
-# == ELIMINAR ==
+# ELIMINAR
 @staff_login
 def eliminar_variante(request, variante_id):
     if request.method == 'POST':

@@ -10,32 +10,42 @@
 </style>
 
 <div class="container mt-2 mb-5">
-    <!-- Breadcrumbs -->
-    <nav class="row mb-3 align-items-center" aria-label="breadcrumb">
+    {# === BREADCRUMB === #}
+    <nav class="row mb-4 align-items-center" aria-label="breadcrumb">
         <div class="col-md-7 mb-2 mb-md-0">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item">
                     <a href="{% url 'lista_categorias' %}" class="text-decoration-none fw-bold" style="color: #7BA356;">Catálogo</a>
                 </li>
-                <li class="breadcrumb-item">
-                    <a href="{% url 'lista_productos' producto.categoria.id %}" class="text-decoration-none fw-bold" style="color: #7BA356;">{{ producto.categoria.nombre }}</a>
-                </li>
+                
+                {% if producto.categoria %}
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'lista_productos' producto.categoria.id %}" class="text-decoration-none fw-bold" style="color: #7BA356;">{{ producto.categoria.nombre }}</a>
+                    </li>
+                {% else %}
+                    <li class="breadcrumb-item active text-muted">Sin Categoría</li>
+                {% endif %}
+                
                 <li class="breadcrumb-item active text-muted" aria-current="page">{{ producto.nombre }}</li>
             </ol>
         </div>
         <div class="col-md-5">
             <div class="d-flex justify-content-start justify-content-md-end">
-                <a href="{% url 'lista_productos' producto.categoria.id %}"
-                    class="btn btn-outline-secondary btn-sm fw-bold px-3 py-2" style="border-color: #7BA356; color: #7BA356;">
-                    <i class="bi bi-arrow-left"></i> Volver a {{ producto.categoria.nombre }}
-                </a>
+                {% if producto.categoria %}
+                    <a href="{% url 'lista_productos' producto.categoria.id %}" class="btn btn-outline-secondary btn-sm fw-bold px-3 py-2" style="border-color: #7BA356; color: #7BA356;">
+                        <i class="bi bi-arrow-left"></i> Volver a {{ producto.categoria.nombre }}
+                    </a>
+                {% else %}
+                    <a href="{% url 'lista_categorias' %}" class="btn btn-outline-secondary btn-sm fw-bold px-3 py-2" style="border-color: #7BA356; color: #7BA356;">
+                        <i class="bi bi-arrow-left"></i> Volver al Catálogo
+                    </a>
+                {% endif %}
             </div>
         </div>
     </nav>
-     <!-- Botón Volver -->
 
     <div class="row bg-white p-4 rounded shadow-sm border-0">
-        <!-- Carrusel de Imágenes (Izquierda) -->
+        {# === CARRUSEL DE IMAGENES === #}
         <div class="col-md-6 mb-4">
             <div class="carousel slide rounded overflow-hidden shadow-sm" id="carruselProducto" data-bs-ride="false"
                 style="background-color: #FAF1EA; border: 1px solid #E2DCD0;">
@@ -43,26 +53,23 @@
                     {% if producto.imagen %}
                     <div class="carousel-item active h-100">
                         <div class="d-flex w-100 h-100 align-items-center justify-content-center">
-                            <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="d-block img-fluid"
-                                style="max-height: 100%; object-fit: contain;">
+                            <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="d-block img-fluid" style="max-height: 100%; object-fit: contain;">
                         </div>
                     </div>
                     {% else %}
                     <div class="carousel-item active h-100">
                         <div class="d-flex w-100 h-100 align-items-center justify-content-center">
-                            <!-- Agrandé el icono a display-1 para que se vea más imponente -->
                             <i class="bi bi-box-seam display-1 text-secondary opacity-25"></i>
                         </div>
                     </div>
                     {% endif %}
     
-                    <!-- Imagenes adicionales (de las variantes) -->
+                    {# === IMAGENES ADICIONALES DE LAS VARIANTES === #}
                     {% for variante in variantes %}
                         {% for img in variante.imagenes_extra.all %}
                         <div class="carousel-item h-100">
                             <div class="d-flex w-100 h-100 align-items-center justify-content-center">
-                                <img src="{{ img.imagen.url }}" alt="Imagen extra" class="d-block img-fluid"
-                                    style="max-height: 100%; object-fit: contain;">
+                                <img src="{{ img.imagen.url }}" alt="Imagen extra" class="d-block img-fluid" style="max-height: 100%; object-fit: contain;">
                             </div>
                         </div>
                         {% endfor %}
@@ -70,26 +77,29 @@
                 </div>
     
                 <button type="button" class="carousel-control-prev" data-bs-target="#carruselProducto" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon rounded-circle" aria-hidden="true"
-                        style="background-color: #7BA356; padding: 1.5rem;"></span>
+                    <span class="carousel-control-prev-icon rounded-circle" aria-hidden="true" style="background-color: #7BA356; padding: 1.5rem;"></span>
                 </button>
                 <button type="button" class="carousel-control-next" data-bs-target="#carruselProducto" data-bs-slide="next">
-                    <span class="carousel-control-next-icon rounded-circle" aria-hidden="true"
-                        style="background-color: #7BA356; padding: 1.5rem;"></span>
+                    <span class="carousel-control-next-icon rounded-circle" aria-hidden="true" style="background-color: #7BA356; padding: 1.5rem;"></span>
                 </button>
             </div>
         </div>
     
-        <!-- Información y Selector de variante (Derecha) -->
+        {# === INFORMACIÓN Y SELECCIÓN DE LA VARIANTE === #}
         <div class="col-md-6 ps-md-5">
-            <span class="badge mb-2 px-3 py-2" style="background-color: #7BA356; color: white; font-size: 0.9rem;">
-                {{ producto.categoria.nombre }}</span>
+            <!-- BADGE PROTEGIDO -->
+            {% if producto.categoria %}
+                <span class="badge mb-2 px-3 py-2" style="background-color: #7BA356; color: white; font-size: 0.9rem;">{{ producto.categoria.nombre }}</span>
+            {% else %}
+                <span class="badge mb-2 px-3 py-2 bg-secondary" style="font-size: 0.9rem;">Sin Categoría</span>
+            {% endif %}
+            
             <h1 class="fw-bold mb-2" style="color: #2F3E2A;">{{ producto.nombre }}</h1>
             <p class="text-muted mb-5 fs-5">{{ producto.descripcion }}</p>
     
             <h5 class="fw-bold mb-3 border-bottom pb-2">Selecciona una presentación:</h5>
     
-            <!-- Formulario para ir agregando al carro las variantes -->
+            {# === FORM PARA IR AGREGANDO LAS VARIANTES AL CARRO === #}
             <form id="form-agregar">
                 <div class="mb-4">
                     <select id="selector-variante" class="form-select form-select-lg mb-3 fw-bold shadow-sm"
@@ -98,7 +108,7 @@
                         <option value="{{ variante.id }}" data-codigo="{{ variante.codigo }}"
                             data-unidades="{{ variante.unidades_por_caja }}"
                             data-dimensiones="{{ variante.dimensiones|default:'No especificadas' }}"
-                            data-material="{{ variante.presentacion|default:'No especificado' }}"
+                            data-material="{{ variante.material|default:'No especificado' }}"
                             data-presentacion="{{ variante.presentacion|default:'No especificada' }}"
                             data-microondas="{% if variante.apto_microondas %}Sí{% else %}No{% endif %}"
                             data-ecologico="{% if variante.es_ecologico %}Sí{% else %}No{% endif %}"
@@ -110,7 +120,7 @@
                     </select>
                 </div>
     
-                <!-- Panel de las especificaciones -->
+                {# === PANEL DE ESPECIFICACIONES === #}
                 <div class="card mb-4 border-0 shadow-sm" style="background-color: #E4EADF !important;">
                     <div class="card-body">
                         <h6 class="fw-bold border-bottom pb-2 mb-3"
@@ -155,8 +165,7 @@
                 </div>
     
                 <div class="d-grid gap-2">
-                    <button type="button" id="btn-agregar-detalle" class="btn btn-primary btn-lg fw-bold shadow-lg"
-                        style="font-size: 1.2rem;">
+                    <button type="button" id="btn-agregar-detalle" class="btn btn-primary btn-lg fw-bold shadow-lg" style="font-size: 1.2rem;">
                         <i class="bi bi-cart-plus"></i> Agregar al Carrito
                     </button>
                 </div>
