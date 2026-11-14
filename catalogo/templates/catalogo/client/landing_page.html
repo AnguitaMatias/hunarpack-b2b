@@ -1,50 +1,57 @@
 {% extends 'catalogo/components/base.html' %}
+{% load static %}
 
 {% block content %}
+{% load static %}
 <!-- HERO -->
-<div class="text-white text-center py-5 mb-5 shadow-sm" style="background: linear-gradient(135deg, #7BA356 0%, #538A86 100%);">
-    <div class="container py-5">
-        <h1 class="display-4 fw-bold mb-3 text-white">Insumos de Embalaje Directo para tu Empresa</h1>
-        <p class="lead text-white-50 mb-5 mx-auto" style="max-width: 700px;">
+<div class="position-relative overflow-hidden text-white text-center shadow-sm mb-5" style="min-height: 60vh; display: flex; align-items: center;">
+    <!-- VIDEO DE FONDO CON POSTER (Imagen que se ve mientras carga o si falla el video) -->
+    <video autoplay loop muted playsinline class="position-absolute w-100 h-100" style="object-fit: cover; z-index: 0; top: 0; left: 0;" poster="{% static 'catalogo/img/hero.jpg' %}">
+        <source src="{% static 'catalogo/video/hero.mp4' %}" type="video/mp4">
+    </video>
+    <!-- CAPA OSCURA (OVERLAY) -->
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: rgba(47, 62, 42, 0.75); z-index: 1;"></div>
+    <!-- CONTENIDO DEL HERO -->
+    <div class="container position-relative py-4 py-md-5" style="z-index: 2;">
+        <h1 class="display-5 display-md-3 fw-bold mb-3 text-white">Insumos de Embalaje Directo para tu Empresa</h1>
+        <p class="lead fw-semibold text-white text-opacity-75 mb-4 mb-md-5 mx-auto fs-6 fs-md-5" style="max-width: 700px;">
             Plataforma B2B exclusiva. Arma tu lista de requerimientos y recibe una cotización formal con precios
             mayoristas en la comodidad de tu correo.
         </p>
-        <a href="{% url 'lista_categorias' %}" class="btn btn-light btn-lg fw-bold px-5 py-3 shadow"
-            style="color: #5C8A3F;">
+        
+        <a href="{% url 'lista_categorias' %}" class="btn btn-light btn-lg fw-bold px-4 px-md-5 py-2 py-md-3 shadow" style="color: #2F3E2A;">
             <i class="bi bi-box-seam"></i> Ingresa a Nuestro Catálogo
         </a>
     </div>
 </div>
 
-<div class="py-5 bg-seccion-verde mb-5">
+<div class="py-4 py-md-5 bg-seccion-verde mb-5">
     <div class="container">
         <!-- Seccion para explicar el sistema de cotizaciones -->
-        <div class="row text-center py-4">
-            <h2 class="fw-bold mb-5 text-dark">¿Cómo funciona nuestro sistema de cotización?</h2>
+        <div class="row text-center py-2 py-md-4">
+            <h2 class="fw-bold mb-4 mb-md-5 text-dark px-2">¿Cómo funciona nuestro sistema de cotización?</h2>
 
             <div class="col-md-4 mb-4">
-                <div class="card h-100 border-0 p-4">
+                <div class="card h-100 border-0 p-3 p-md-4">
                     <div class="card-body">
-                        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm"
-                            style="width: 70px; height: 70px;">
+                        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 70px; height: 70px;">
                             <i class="bi bi-search fs-2 text-primary"></i>
                         </div>
                         <h4 class="card-title fw-bold">1. Explora</h4>
-                        <p class="card-text text-muted">Revisa nuestro catálogo, filtra a tu gusto y da con el producto
+                        <p class="card-text text-muted small-md">Revisa nuestro catálogo, filtra a tu gusto y da con el producto
                             perfecto para ti.</p>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-4 mb-4">
-                <div class="card h-100 border-0 p-4">
+                <div class="card h-100 border-0 p-3 p-md-4">
                     <div class="card-body">
-                        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm"
-                            style="width: 70px; height: 70px;">
+                        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 70px; height: 70px;">
                             <i class="bi bi-cart-check fs-2 text-primary"></i>
                         </div>
                         <h4 class="card-title fw-bold">2. Agrega</h4>
-                        <p class="card-text text-muted">Añade los productos que necesitas a tu carrito de solicitud,
+                        <p class="card-text text-muted small-md">Añade los productos que necesitas a tu carrito de solicitud,
                             ajusta
                             las cantidades y finalmente envía la solicitud rellenando el formulario de contacto.</p>
                     </div>
@@ -52,14 +59,13 @@
             </div>
 
             <div class="col-md-4 mb-4">
-                <div class="card h-100 border-0 shadow-sm p-4 bg-white">
+                <div class="card h-100 border-0 p-3 p-md-4">
                     <div class="card-body">
-                        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm"
-                            style="width: 70px; height: 70px;">
+                        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 70px; height: 70px;">
                             <i class="bi bi-file-earmark-pdf fs-2 text-primary"></i>
                         </div>
                         <h4 class="card-title fw-bold">3. Recibe</h4>
-                        <p class="card-text text-muted">Un ejecutivo evaluará tu solicitud y te enviará un PDF con los
+                        <p class="card-text text-muted small-md">Un ejecutivo evaluará tu solicitud y te enviará un PDF con los
                             precios vigentes</p>
                     </div>
                 </div>
@@ -68,37 +74,53 @@
     </div>
 
 
-    <hr class="my-5">
+    <hr class="my-4 my-md-5">
 
     <!-- Productos Destacados -->
-    <div class="text-center mb-4">
+    <div class="text-center mb-4 px-2">
         <h3 class="fw-bold text-dark">Te presentamos algunos de nuestros productos</h3>
-        <p class="text-muted">Los insumas más solicitados por nuestros clientes.</p>
+        <p class="text-muted">Los insumos más solicitados por nuestros clientes.</p>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-3 g-4 mb-5 px-2">
-        {% for producto in productos_destacados %}
-        <div class="col">
-            <div class="card h-100 border-0 shadow-sm text-center">
-                <!--Incorporar imagenes luego-->
-                <div class="card-body py-5 bg-light rounded-top">
-                    <i class="bi bi-box display-4 text-secondary"></i>
-                </div>
-                <div class="card-footer bg-white border-0 py-3">
-                    <h5 class="fw-bold text-dark mb-1">{{ producto.nombre }}</h5>
-                    <p class="text-muted small mb-0">{{ producto.categoria.nombre }}</p>
+    {% if productos_destacados %}
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 mb-4 mb-md-5 px-2">
+            {% for producto in productos_destacados %}
+            <div class="col">
+                <div class="card h-100 border-0 shadow-sm text-center hover-shadow">
+                    <div class="card-body p-0 bg-light rounded-top d-flex align-items-center justify-content-center" style="height: 200px; overflow: hidden;">
+                        {% if producto.imagen %}
+                        <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="w-100 h-100"
+                            style="object-fit: cover;">
+                        {% else %}
+                        <i class="bi bi-box display-4 text-secondary opacity-50"></i>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-white border-0 py-3">
+                        <h5 class="fw-bold text-dark mb-1">{{ producto.nombre }}</h5>
+                        <p class="text-muted small mb-0">
+                            {% if producto.categoria %}
+                            {{ producto.categoria.nombre }}
+                            {% else %}
+                            Producto General
+                            {% endif %}
+                        </p>
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% empty %}
-        <div class="col-12 text-center text-muted">Pronto tendremos productos disponibles</div>
-        {% endfor %}
-    </div>
+    {% else %}
+        <div class="w-100 d-flex flex-column align-items-center justify-content-center text-center text-muted py-5 mb-4">
+            <i class="bi bi-inbox display-1 mb-3 text-secondary opacity-50"></i>
+            <h4 class="mb-0">Pronto tendremos productos disponibles</h4>
+        </div>
+    {% endif %}
 
-    <div class="bg-seccion-crema rounded p-5 text-center shadow-sm border" style="border-color: #E2DCD0 !important;">
+    <div class="bg-seccion-crema rounded p-4 p-md-5 text-center shadow-sm border mx-2" style="border-color: #E2DCD0 !important;">
         <h3 class="fw-bold text-dark mb-3">¿Listo para abastecer tu empresa?</h3>
         <p class="text-muted mb-4">Ingresa ahora y arma tu solicitud en menos de 2 minutos.</p>
-        <a href="{% url 'lista_categorias' %}" class="btn btn-dark fw-bold px-4 py-2">Ir al Catálogo</a>
+        <a href="{% url 'lista_categorias' %}" class="btn btn-lg btn-dark fw-bold px-4 px-md-5 py-2 py-md-3 shadow w-sm-auto">Ir al Catálogo</a>
+                                                
     </div>
 </div>
 {% endblock %}

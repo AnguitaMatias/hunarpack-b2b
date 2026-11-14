@@ -20,6 +20,7 @@ class Producto(models.Model):
     nombre = models.CharField(max_length=200, verbose_name="Nombre del Producto Base")
     descripcion = models.TextField(blank=True, verbose_name="Descripción General")
     imagen = models.ImageField(upload_to='productos/', blank=True, null=True, verbose_name="Imagen Principal del Producto")
+    activo = models.BooleanField(default=True, verbose_name="¿Está Activo en el Catálogo?")
     
     def __str__(self):
         return self.nombre
@@ -32,6 +33,7 @@ class VarianteProducto(models.Model):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name='variantes')
     codigo = models.CharField(max_length=50, unique=True, verbose_name="Código / SKU")
     nombre_variante = models.CharField(max_length=200, verbose_name="Nombre de la Variante (ej. Caja 50x50)")
+    activo = models.BooleanField(default=True, verbose_name="¿Está Activa?")
     
     # Atributos
     unidades_por_caja = models.PositiveIntegerField(default=1, verbose_name="Unidades por Caja")

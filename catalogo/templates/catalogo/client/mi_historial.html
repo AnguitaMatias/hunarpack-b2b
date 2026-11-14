@@ -1,64 +1,107 @@
 {% extends 'catalogo/components/base.html' %}
+{% load filtros %}
 
 {% block content %}
 <div class="container mt-4 mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-dark">Mi Historial de Solicitudes</h2>
-        <a href="{% url 'lista_productos' %}" class="btn btn-outline-dark">Volver al Catálogo</a>
+    <!-- Cabecera -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold text-dark mb-0"><i class="bi bi-clock-history me-2"></i>Mi Historial</h2>
+            <p class="text-muted mb-0 small">Revisa el estado de tus solicitudes anteriores.</p>
+        </div>
+        <a href="{% url 'lista_categorias' %}" class="btn btn-outline-secondary fw-bold align-self-start align-self-md-auto">
+            <i class="bi bi-arrow-left"></i> Volver al Catálogo
+        </a>
     </div>
 
-    <div class="card shadow-sm border-0">
+    <div class="card shadow-sm border-0 mb-4">
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4 py-3">N° Solicitud</th>
-                            <th>Fecha</th>
-                            <th>Empresa</th>
-                            <th>Estado / Total</th>
-                            <th class="text-end pe-4">Documento</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for cotizacion in cotizaciones %}
-                        <tr>
-                            <td class="ps-4 fw-bold text-secondary">#{{ cotizacion.id }}</td>
-                            <td>{{ cotizacion.fecha_creacion|date:"d M Y" }}</td>
-                            <td>{{ cotizacion.empresa }}</td>
-                            <td class="fw-semibold">
-                                {% if cotizacion.total > 0 %}
-                                    <span class="text-success">${{ cotizacion.total }}</span>
-                                {% else %}
-                                    <span class="badge bg-warning text-dark px-3 py-2">En revisión</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-end pe-4">
-                                {% if cotizacion.total > 0 %}
-                                    <a href="{% url 'generar_pdf_cotizacion' cotizacion.id %}" class="btn btn-sm btn-outline-danger" title="Descargar PDF">
-                                        <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
-                                    </a>
-                                    <a href="{% url 'repetir_cotizacion' cotizacion.id %}" class="btn btn-sm-btn-outline-primary" title="Repetir este pedido">
-                                        <i class="bi bi-arrow-repeat"></i> Repetir
-                                    </a>
-                                {% else %}
-                                    <button class="btn btn-sm btn-light text-muted" disabled>Pendiente</button>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center py-5 text-muted">
-                                <i class="bi bi-inbox fs-1 d-block mb-3 text-light"></i>
-                                <h5>Aún no has realizado ninguna solicitud.</h5>
-                                <p>Tus cotizaciones guardadas aparecerán aquí.</p>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            
+            <!-- Encabezado de la tabla (Solo visible en PC) -->
+            <div class="d-none d-md-flex row bg-light p-3 m-0 border-bottom fw-bold text-muted small text-uppercase">
+                <div class="col-md-2">N° Solicitud</div>
+                <div class="col-md-2">Fecha</div>
+                <div class="col-md-3">Empresa</div>
+                <div class="col-md-2">Estado / Total</div>
+                <div class="col-md-3 text-end pe-4">Documento</div>
             </div>
+
+            <!-- Filas de Cotizaciones -->
+            {% for cotizacion in cotizaciones %}
+            <div class="row p-3 m-0 border-bottom align-items-center transition-hover">
+                
+                <!-- N° y Fecha (2 columnas en móvil) -->
+                <div class="col-6 col-md-2 mb-2 mb-md-0">
+                    <span class="d-md-none text-muted small d-block">N° Solicitud</span>
+                    <span class="fw-bold text-secondary">#{{ cotizacion.id }}</span>
+                </div>
+                <div class="col-6 col-md-2 mb-2 mb-md-0 text-end text-md-start">
+                    <span class="d-md-none text-muted small d-block">Fecha</span>
+                    {{ cotizacion.fecha_creacion|date:"d M Y" }}
+                </div>
+
+                <!-- Empresa -->
+                <div class="col-12 col-md-3 mb-2 mb-md-0">
+                    <span class="d-md-none text-muted small d-block">Empresa</span>
+                    <span class="fw-semibold text-dark">{{ cotizacion.empresa }}</span>
+                </div>
+
+                <!-- Estado / Total -->
+                <div class="col-12 col-md-2 mb-3 mb-md-0">
+                    <span class="d-md-none text-muted small d-block">Estado / Total</span>
+                    {% if cotizacion.estado == 'RESPONDIDA' %}
+                        <span class="text-success fw-bold fs-5">${{ cotizacion.total|peso }}</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark px-3 py-2">En revisión</span>
+                    {% endif %}
+                </div>
+
+                <!-- Acciones (Botones) -->
+                <div class="col-12 col-md-3 text-end pe-md-4 mt-2 mt-md-0">
+                    {% if cotizacion.estado == 'RESPONDIDA' %}
+                        <div class="d-flex flex-column flex-md-row gap-2 justify-content-end">
+                            <a href="{% url 'generar_pdf_cotizacion' cotizacion.id %}" class="btn btn-sm btn-outline-danger fw-bold" title="Descargar PDF">
+                                <i class="bi bi-file-earmark-pdf"></i> <span class="d-md-none ms-1">Descargar PDF</span><span class="d-none d-md-inline">PDF</span>
+                            </a>
+                            <a href="{% url 'repetir_cotizacion' cotizacion.id %}" class="btn btn-sm btn-outline-primary fw-bold" title="Repetir este pedido">
+                                <i class="bi bi-arrow-repeat"></i> <span class="d-md-none ms-1">Repetir Pedido</span><span class="d-none d-md-inline">Repetir</span>
+                            </a>
+                        </div>
+                    {% else %}
+                        <button class="btn btn-sm btn-light text-muted w-100 w-md-auto" disabled>
+                            <i class="bi bi-hourglass-split"></i> Pendiente de cotización
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% empty %}
+            <!-- Estado vacío -->
+            <div class="text-center py-5">
+                <i class="bi bi-inbox display-1 text-secondary opacity-25 mb-3 d-block"></i>
+                <h4 class="fw-bold text-dark">Aún no has realizado ninguna solicitud</h4>
+                <p class="text-muted">Tus cotizaciones guardadas aparecerán aquí una vez que las envíes.</p>
+                <a href="{% url 'lista_categorias' %}" class="btn btn-primary fw-bold mt-3 px-4">Explorar Catálogo</a>
+            </div>
+            {% endfor %}
+
         </div>
     </div>
 </div>
+
+<style>
+    /* Transición suave para el hover de la fila en PC */
+    .transition-hover {
+        transition: background-color 0.2s ease;
+    }
+    .transition-hover:hover {
+        background-color: #f8f9fa;
+    }
+    /* Ajustes para pantallas de escritorio */
+    @media (min-width: 768px) {
+        .w-md-auto {
+            width: auto !important;
+        }
+    }
+</style>
 {% endblock %}

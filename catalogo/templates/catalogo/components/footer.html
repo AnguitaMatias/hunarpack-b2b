@@ -1,6 +1,75 @@
-<footer class="bg-dark text-white text-center py-4 mt-auto">
-    <div class="container">
-        <p class="mb-0">© 2026 HunarPack Soluciones. Plataforma B2B Exclusiva para Clientes. Todos los derechos reservados.</p>
-        <small class="text-white-50">Desarrollado por Matias Anguita Dev.</small>
+<footer class="text-white mt-auto" style="background-color: var(--v-dark);">
+    <div class="container pt-5 pb-4">
+        <div class="row">
+            <!-- Columna 1: Marca y Redes Sociales -->
+            <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+                <h5 class="fw-bold text-white mb-3">HunarPack Soluciones</h5>
+                <p class="text-white-50 small mb-4" style="max-width: 300px;">
+                    Plataforma B2B exclusiva para la gestión de insumos de embalaje. Optimiza tus cotizaciones y abastece tu empresa de manera rápida y segura.
+                </p>
+                <div class="d-flex gap-3">
+                    <!-- Redes Sociales (Reemplazar cuando termine todo) -->
+                    <a href="#" class="text-white fs-5 transition-hover" title="Facebook"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="text-white fs-5 transition-hover" title="Instagram"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="text-white fs-5 transition-hover" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                    <a href="#" class="text-white fs-5 transition-hover" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                </div>
+            </div>
+            <!-- Columna 2: Nosotros -->
+            <div class="col-lg-2 col-md-6 mb-4 mb-lg-0">
+                <h6 class="fw-bold text-white mb-3 text-uppercase small">Nosotros</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none small hover-white">Quiénes Somos</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none small hover-white">Nuestra Misión</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none small hover-white">Trabaja con Nosotros</a></li>
+                </ul>
+            </div>
+            <!-- Columna 3: Términos y Ayuda -->
+            <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                <h6 class="fw-bold text-white mb-3 text-uppercase small">Soporte</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none small hover-white">Términos y Condiciones</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none small hover-white">Política de Privacidad</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none small hover-white">Preguntas Frecuentes (FAQ)</a></li>
+                </ul>
+            </div>
+            <!-- Columna 4: Contacto -->
+            <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                <h6 class="fw-bold text-white mb-3 text-uppercase small">Contacto</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2 text-white-50 small"><i class="bi bi-geo-alt-fill me-2"></i> Coquimbo, Chile</li>
+                    <li class="mb-2 text-white-50 small"><i class="bi bi-envelope-fill me-2"></i> ventas@hunarpack.cl</li>
+                    <li class="mb-2 text-white-50 small"><i class="bi bi-telephone-fill me-2"></i> +56 9 1234 5678</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- Barra inferior de Copyright y Créditos -->
+    <div class="text-center py-3" style="background-color: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.05);">
+        <div class="container">
+            <p class="mb-0 text-white-50 small">
+                © 2026 HunarPack Soluciones. Plataforma B2B Exclusiva para Clientes. Todos los derechos reservados.
+            </p>
+            <small class="text-white-50" style="opacity: 0.7;">
+                Desarrollado por Matias Anguita Dev.
+            </small>
+        </div>
     </div>
 </footer>
+<!-- Estilos específicos para el footer -->
+<style>
+    /* Efecto hover para los enlaces del footer */
+    .hover-white:hover {
+        color: #ffffff !important;
+        text-decoration: underline !important;
+        transition: all 0.2s ease;
+    }
+    /* Efecto hover para las redes sociales */
+    .transition-hover {
+        transition: transform 0.2s ease, color 0.2s ease;
+    }
+    .transition-hover:hover {
+        color: var(--v-primary) !important;
+        transform: translateY(-3px);
+    }
+</style>

@@ -28,8 +28,9 @@ urlpatterns = [
     # --- FLUJO CONTRASEÑA OLVIDADA ---
     path('reiniciar-password/', auth_views.PasswordResetView.as_view(
         template_name='catalogo/auth/password_reset_form.html',
-        email_template_name='catalogo/password_reset_email.html',
-        subject_template_name='catalogo/password_reset_subject.txt',
+        email_template_name='catalogo/auth/password_reset_email.txt',
+        html_email_template_name = 'catalogo/auth/password_reset_email.html',
+        subject_template_name='catalogo/auth/password_reset_subject.txt',
         success_url=reverse_lazy('password_reset_done')
     ), name='password_reset'),
     path('reiniciar-password/enviado/', auth_views.PasswordResetDoneView.as_view(
@@ -67,10 +68,12 @@ urlpatterns = [
     path('panel/catalogo/crear/', views.crear_producto, name='crear_producto'),
     path('panel/catalogo/editar/<int:producto_id>/', views.editar_producto, name='editar_producto'),
     path('panel/catalogo/eliminar/<int:producto_id>/', views.eliminar_producto, name='eliminar_producto'),
+    path('panel/catalogo/restaurar/<int:producto_id>/', views.restaurar_producto, name='restaurar_producto'),
     # == VARIANTES
     path('panel/catalogo/<int:producto_id>/variantes/', views.gestionar_variantes, name='gestionar_variantes'),
     path('panel/catalogo/variantes/eliminar/<int:variante_id>/', views.eliminar_variante, name='eliminar_variante'),
     path('panel/catalogo/variante/editar/<int:variante_id>/', views.editar_variante, name='editar_variante'),
+    path('panel/catalogo/variantes/restaurar/<int:variante_id>/', views.restaurar_variante, name='restaurar_variante'),
     path('panel/catalogo/variante/<int:variante_id>/imagenes/', views.gestionar_imagenes_variante, name='gestionar_imagenes_variante'),
     path('panel/catalogo/imagen/eliminar/<int:imagen_id>/', views.eliminar_imagen_variante, name='eliminar_imagen_variante'),
 ]

@@ -14,7 +14,7 @@ from django.contrib.auth.views import PasswordChangeView
 from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
 from django.db.models import Q
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import get_template, render_to_string
 from django.urls import reverse_lazy
@@ -28,7 +28,9 @@ def landing_page(request):
    # .distinct() para evitar duplicidad de variantes del mismo producto
 
    productos_destacados = Producto.objects.filter(
-       variantes__stock_actual__gt=0
+       variantes__stock_actual__gt=0,
+       activo=True,
+       variantes__activo=True
    ).distinct().order_by('?')[:3]
 
    return render(request, 'catalogo/client/landing_page.html', {
@@ -41,7 +43,7 @@ def lista_categorias(request):
     query = request.GET.get('q')
 
     if query:
-        productos = Producto.objects.filter(
+        productos = Producto.objects.filter(activo=True).filter(
             Q(nombre__icontains=query)  |
             Q(descripcion__icontains=query) |
             Q(variantes__codigo__icontains=query)
@@ -61,7 +63,7 @@ def lista_categorias(request):
 
 def lista_productos(request, categoria_id):
     categoria_actual = get_object_or_404(Categoria, id=categoria_id)
-    productos = Producto.objects.filter(categoria=categoria_actual).prefetch_related('variantes')
+    productos = Producto.objects.filter(categoria=categoria_actual, activo=True).prefetch_related('variantes')
     
     query = request.GET.get('q')
     if query:
@@ -86,8 +88,8 @@ def lista_productos(request, categoria_id):
     })
 
 def detalle_producto(request, producto_id):
-    producto = get_object_or_404(Producto, id=producto_id)
-    variantes = producto.variantes.all()
+    producto = get_object_or_404(Producto, id=producto_id, activo=True)
+    variantes = producto.variantes.filter(activo=True)
 
     return render(request, 'catalogo/client/detalle_producto.html', {
         'producto': producto,
@@ -131,7 +133,7 @@ def agregar_al_carrito(request):
 
         # Paso 1. Se valida el producto en la BD para consultar el stock actual
         try:
-            variante = VarianteProducto.objects.get(id=variante_id)
+            variante = VarianteProducto.objects.get(id=variante_id, activo=True)
         except Producto.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Variante no encontrada'})
 
@@ -794,7 +796,6 @@ def crear_categoria(request):
     return render(request, 'catalogo/admin_panel/crear_categoria.html', {
         'form': form
     })
-
 # EDITAR 
 @staff_login
 def editar_categoria(request, categoria_id):
@@ -813,7 +814,6 @@ def editar_categoria(request, categoria_id):
         'form': form,
         'categoria': categoria
     })
-
 # ELIMINAR
 @staff_login
 def eliminar_categoria(request, categoria_id):
@@ -863,7 +863,6 @@ def crear_producto(request):
             form = ProductoForm()
 
     return render(request, 'catalogo/admin_panel/crear_producto.html', {'form': form})
-
 # EDITAR
 @staff_login
 def editar_producto(request, producto_id):
@@ -883,20 +882,39 @@ def editar_producto(request, producto_id):
         'form': form,
         'producto': producto
     })
-# ELIMINAR
+# ELIMINAR (OCULTAR)
 def eliminar_producto(request, producto_id):
     if request.method == 'POST':
         producto = get_object_or_404(Producto, id=producto_id)
         cat_id = producto.categoria.id if producto.categoria else None
         nombre = producto.nombre
-        producto.delete()
-        messages.success(request, f"Producto '{nombre}' eliminado correctamente.")
 
+        producto.activo = False
+        producto.save()
+        producto.variantes.update(activo=False)
+
+        messages.success(request, f"Porducto '{nombre}' ocultado del catálogo. El historial de corizaciones se ha conservado.")
+        
         if cat_id:
             return redirect('lista_productos_por_categoria', categoria_id=cat_id)
         return redirect('lista_productos_admin')
     return redirect('lista_categorias_admin')
 
+def restaurar_producto(request, producto_id):
+    if request.method == 'POST':
+        producto = get_object_or_404(Producto, id=producto_id)
+        nombre = producto.nombre
+
+        producto.activo = True
+        producto.save()
+        producto.variantes.update(activo=True)
+
+        messages.success(request, f"Producto '{nombre}' restaurado y visible en el catálogo.")
+
+        if producto.categoria:
+            return redirect('lista_productos_por_categoria', categoria_id=producto.categoria.id)
+        return redirect('lista_productos_admin')
+    return redirect('lista_categorias_admin')
 
 # === VARIANTES ===
 # CREAR 
@@ -921,7 +939,6 @@ def gestionar_variantes(request, producto_id):
         'variantes': variantes,
         'form': form
     })
-
 @staff_login
 def gestionar_imagenes_variante(request, variante_id):
     variante = get_object_or_404(VarianteProducto, id=variante_id)
@@ -943,7 +960,6 @@ def gestionar_imagenes_variante(request, variante_id):
         'imagenes': imagenes,
         'form': form
     })
-
 # EDITAR
 @staff_login
 def editar_variante(request, variante_id):
@@ -961,17 +977,31 @@ def editar_variante(request, variante_id):
         'form': form,
         'variante': variante
     })
-
-# ELIMINAR
+# ELIMINAR (OCULTAR)
 @staff_login
 def eliminar_variante(request, variante_id):
     if request.method == 'POST':
         variante = get_object_or_404(VarianteProducto, id=variante_id)
         producto_id = variante.producto.id
         nombre = variante.nombre_variante
-        variante.delete()
-        messages.success(request, f"Variante '{nombre}' eliminada correctamente.")
+        
+        variante.activo = False
+        variante.save()
+
+        messages.success(request, f"Variante '{nombre}' se ha ocultado del catálogo.")
         return redirect('gestionar_variantes', producto_id=producto_id)
+    return redirect('lista_productos_admin')
+
+def restaurar_variante(request, variante_id):
+    if request.method == 'POST':
+        variante = get_object_or_404(VarianteProducto, id=variante_id)
+        nombre = variante.nombre_variante
+
+        variante.activo = True
+        variante.save()
+        messages.success(request, f"Variante '{nombre}' restaurada correctamente.")
+                
+        return redirect('gestionar_variantes', producto_id=variante.producto.id)
     return redirect('lista_productos_admin')
 
 @staff_login

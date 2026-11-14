@@ -1,24 +1,30 @@
-<nav class="navbar navbar-dark bg-dark mb-4 shadow-sm">
-    <div class="container">
-        <a href="{% url 'landing_page' %}" class="navbar-brand mb-0 h1">HunarPack B2B</a>
+{% load static %}
+<nav class="navbar navbar-dark bg-dark mb-4 shadow-sm py-2 py-md-3">
+    <div class="container flex-nowrap">
+        <!-- Logo -->
+        <a href="{% url 'landing_page' %}" class="navbar-brand mb-0 p-0 me-2 bg-white rounded p-1">
+            <img src="{% static 'catalogo/img/logo.png' %}" alt="HunarPack B2B" style="height: 35px; width: auto; max-width: 150px; object-fit: contain;" class="d-md-none">
+            <img src="{% static 'catalogo/img/logo.png' %}" alt="HunarPack B2B" style="height: 45px; width: auto; max-width: 200px; object-fit: contain;" class="d-none d-md-block">
+        </a>
 
-        <!-- Carrito -->
-        <div class="d-flex gap-3 align-items-center">
-            <a href="{% url 'resumen_carrito' %}" class="btn btn-outline-light position-relative">
-                <i class="bi bi-cart3"></i> Carro
-                <span id="contador-carrito" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+        <!-- Contenedor derecho (carro + menú usuario) -->
+        <div class="d-flex align-items-center gap-3 gap-md-3 ms-auto">
+            <a href="{% url 'resumen_carrito' %}" class="btn btn-outline-light position-relative px-2 px-md-3" title="Ver mi carrito">
+                <i class="bi bi-cart3"></i>
+                <span class="d-none d-sm-inline ms-1">Carro</span>
+                <!-- Contador -->
+                <span id="contador-carrito" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm">
                     {{ total_carrito_global }}
                 </span>
             </a>
-        </div>
-
-        <!-- Menú de usuario -->
+            <!-- Menú de usuario -->
         {% if user.is_authenticated %}
             <div class="dropdown">
-                <button type="button" class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-person-circle"></i> {{ user.username }}
+                <button type="button" class="btn btn-dark dropdown-toggle px-2 px-md-3" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle"></i>
+                    <span class="d-none d-sm-inline ms-1">{{ user.username }}</span>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end">
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
                     <li><a href="{% url 'mi_perfil' %}" class="dropdown-item fw-bold text-info"><i class="bi bi-person-circle"></i> Mi Perfil</a></li>
                     <li><a href="{% url 'mi_historial' %}" class="dropdown-item fw-bold text-success"><i class="bi bi-clock-history"></i> Mi Historial</a></li>
                     <li><a href="{% url 'cambiar_clave' %}" class="dropdown-item fw-bold text-warning-emphasis"><i class="bi bi-key"></i> Cambiar Contraseña</a></li>
@@ -30,7 +36,11 @@
                 </ul>
             </div>
         {% else %}
-            <a href="{% url 'login' %}" class="btn btn-outline-secondary">Ingresar</a>
+            <a href="{% url 'login' %}" class="btn btn-outline-light px-2 px-md-3" title="Ingresar">
+                <i class="bi bi-box-arrow-in-right d-inline d-sm-none"></i>
+                <span class="d-none d-sm-inline">Ingresar</span>
+            </a>
         {% endif %}
+        </div>
     </div>
 </nav>

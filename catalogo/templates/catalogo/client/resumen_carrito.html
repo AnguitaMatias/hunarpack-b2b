@@ -2,116 +2,148 @@
 
 {% block content %}
 <div class="container mt-4 mb-5">
-    <h2 class="mb-4 fw-bold text-dark">Resumen de Cotización</h2>
+    <!-- Cabecera del Carrito -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+        <h2 class="mb-3 mb-md-0 fw-bold text-dark">
+            <i class="bi bi-cart3 me-2"></i> Resumen de Cotización
+        </h2>
+        <a href="{% url 'lista_categorias' %}" class="btn btn-outline-secondary fw-bold align-self-start align-self-md-auto">
+            <i class="bi bi-arrow-left"></i> Volver al Catálogo
+        </a>
+    </div>
 
-    <!-- Se comprueba que haya productos en el carro -->
     {% if productos_carrito %}
-    <div class="card shadow-sm border-0">
+    <div class="card shadow-sm border-0 mb-4">
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">Producto</th>
-                            <th class="text-center">Cantidad</th>
-                            <th class="text-center pe-4">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in productos_carrito %}
-                        <tr id="fila-{{ item.variante.id }}">
-                            <td class="align-middle ps-4">
-                                <h6 class="mb-0 fw-bold">{{ item.variante.producto.nombre }}</h6>
-                                <span class="text-primary small">{{ item.variante.nombre_variante }}</span>
-                                <small class="text-muted">Código: {{ item.variante.codigo }}</small>
-                            </td>
+            
+            {% for item in productos_carrito %}
+            <!-- Contenedor del Producto (Actúa como fila en PC y tarjeta en móvil) -->
+            <div id="fila-{{ item.variante.id }}" class="border-bottom p-3 p-md-4 transition-hover">
+                <div class="row align-items-center g-3">
+                    
+                    <!-- Columna: Información del Producto -->
+                    <div class="col-12 col-md-6">
+                        <h5 class="mb-1 fw-bold text-dark">{{ item.variante.producto.nombre }}</h5>
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <span class="badge text-bg-light border" style="color: #7BA356;">{{ item.variante.nombre_variante }}</span>
+                            <small class="text-muted"><i class="bi bi-upc me-1"></i>{{ item.variante.codigo }}</small>
+                        </div>
+                    </div>
 
-                            <!-- Botones e input manual -->
-                            <td class="align-middle text-center">
-                                <div class="btn-group btn-group-sm shadow-sm" role="group">
-                                    <button type="button" class="btn btn-outline-secondary btn-actualizar" data-id="{{ item.variante.id }}" data-accion="restar">-</button>
-                                    <input type="number" id="cantidad-{{ item.variante.id }}" class="form-control text-center input-cantidad mx-2" data-id="{{ item.variante.id }}" value="{{ item.cantidad }}" min="1" style="width: 70px; display: inline-block;">
-                                    <button type="button" class="btn btn-outline-secondary btn-actualizar" data-id="{{ item.variante.id }}" data-accion="sumar">+</button>
-                                </div>
-                            </td>
-
-                            <!-- Botón eliminar -->
-                            <td class="align-middle text-center pe-4">
-                                <button class="btn btn-sm btn-outline-danger btn-eliminar" data-id="{{ item.variante.id }}">
-                                    <i class="bi bi-trash"></i> Eliminar
+                    <!-- Columna: Controles de Cantidad -->
+                    <div class="col-6 col-md-3">
+                        <div class="d-flex justify-content-md-center">
+                            <div class="input-group shadow-sm" style="max-width: 140px;">
+                                <button type="button" class="btn btn-outline-secondary btn-actualizar" data-id="{{ item.variante.id }}" data-accion="restar">
+                                    <i class="bi bi-dash"></i>
                                 </button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                <input type="number" id="cantidad-{{ item.variante.id }}" class="form-control text-center input-cantidad fw-bold" data-id="{{ item.variante.id }}" value="{{ item.cantidad }}" min="1">
+                                <button type="button" class="btn btn-outline-secondary btn-actualizar" data-id="{{ item.variante.id }}" data-accion="sumar">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Columna: Botón Eliminar -->
+                    <div class="col-6 col-md-3 text-end">
+                        <button class="btn btn-outline-danger btn-sm btn-eliminar fw-bold w-75 w-md-auto" data-id="{{ item.variante.id }}">
+                            <i class="bi bi-trash"></i> <span class="d-none d-md-inline">Eliminar</span>
+                        </button>
+                    </div>
+                </div>
             </div>
+            {% endfor %}
+
         </div>
     </div>
 
-    <div class="d-flex justify-content-between mt-4">
-        <a href="{% url 'lista_categorias' %}" class="btn btn-outline-secondary fw-bold">
-            <i class="bi bi-arrow-left"></i> Volver al Catálogo
-        </a>
-        <button type="button" class="btn btn-success btn-lg fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#checkout">
-            <i class="bi bi-send-check"></i> Enviar Cotización
+    <!-- Botones de Acción Final -->
+    <div class="d-grid d-md-flex justify-content-md-end mt-4 gap-3">
+        <button type="button" class="btn btn-success btn-lg fw-bold shadow-sm px-5 py-3" data-bs-toggle="modal" data-bs-target="#checkout">
+            <i class="bi bi-send-check me-2"></i> Enviar Cotización
         </button>
     </div>
+
     {% else %}
-    <!-- En caso de que el carro este vacío -->
-    <div class="alert alert-info text-center py-5 shadow-sm border-0" role="alert">
-        <i class="bi bi-cart-x display-1 text-muted mb-3 d-block"></i>
-        <h4 class="alert-heading mb-3 fw-bold">Tu carrito de cotización está vacío</h4>
-        <p class="text-muted">Aún no has agregado ninguno de nuestros productos <i class="bi bi-emoji-frown-fill"></i>.</p>
-        <a href="{% url 'lista_categorias' %}" class="btn btn-primary mt-3 fw-bold">Ir a Nuestro Catálogo</a>
+    <!-- Vista alternativa si el carro está vacío -->
+    <div class="card shadow-sm border-0 py-5 text-center">
+        <div class="card-body">
+            <i class="bi bi-cart-x display-1 text-secondary opacity-25 mb-3 d-block"></i>
+            <h4 class="fw-bold text-dark">Tu carrito está vacío</h4>
+            <p class="text-muted mb-4">Aún no has agregado ninguno de nuestros productos.</p>
+            <a href="{% url 'lista_categorias' %}" class="btn btn-primary fw-bold px-4 py-2">Explorar Catálogo</a>
+        </div>
     </div>
     {% endif %}
 
-    <!-- Modal del checkout -->
+    <!-- Modal del Checkout -->
     <div class="modal fade" id="checkout" aria-labelledby="checkoutLabel" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title" id="checkoutLabel"><i class="bi bi-building"></i> Datos de Contacto Comercial</h5>
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header text-white border-0" style="background-color: #2F3E2A;">
+                    <h5 class="modal-title fw-bold text-light" id="checkoutLabel"><i class="bi bi-building me-2"></i> Datos de Contacto Comercial</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form action="{% url 'procesar_cotizacion' %}" method="post">
                     {% csrf_token %}
-                    <div class="modal-body p-4">
+                    <div class="modal-body p-4 p-md-5 bg-light">
+                        <p class="text-muted small mb-4">Completa tus datos para que un ejecutivo prepare tu cotización formal.</p>
+                        
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-bold small">Razón Social / Empresa <i class="bi bi-asterisk"></i></label>
-                                <input type="text" name="empresa" class="form-control" required>
+                                <label class="form-label fw-bold small">Razón Social / Empresa <span class="text-danger">*</span></label>
+                                <input type="text" name="empresa" class="form-control form-control-lg" required placeholder="Ej: Comercial SpA">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small">RUT Empresa</label>
-                                <input type="text" name="rut_empresa" class="form-control" placeholder="EJ: 76.543.210-K">
+                                <input type="text" name="rut_empresa" class="form-control form-control-lg" placeholder="EJ: 76.543.210-K">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold small">Nombre del Contacto <i class="bi bi-asterisk"></i></label>
-                                <input type="text" name="nombre_contacto" class="form-control" required>
+                                <label class="form-label fw-bold small">Nombre del Contacto <span class="text-danger">*</span></label>
+                                <input type="text" name="nombre_contacto" class="form-control form-control-lg" required placeholder="Tu nombre">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold-small">Teléfono <i class="bi bi-asterisk"></i></label>
-                                <input type="text" name="telefono" class="form-control" required>
+                                <label class="form-label fw-bold small">Teléfono <span class="text-danger">*</span></label>
+                                <input type="text" name="telefono" class="form-control form-control-lg" required placeholder="+56 9...">
                             </div>
                             <div class="col-12">
-                                <label class="form-label fw-bold small">Correo Electrónico <i class="bi bi-asterisk"></i></label>
-                                <input type="email" name="email" class="form-control" required>
+                                <label class="form-label fw-bold small">Correo Electrónico <span class="text-danger">*</span></label>
+                                <input type="email" name="email" class="form-control form-control-lg" required placeholder="tu@empresa.cl">
                             </div>
                             <div class="col-12">
-                                <label class="form-label fw-bold small">Mensaje o Instrucciones Adicionales</label>
-                                <textarea name="mensaje" rows="3" class="form-control" placeholder="Ej: Necesito entrega en sucursal de Coquimbo..."></textarea>
+                                <label class="form-label fw-bold small">Instrucciones Adicionales</label>
+                                <textarea name="mensaje" rows="3" class="form-control" placeholder="Ej: Necesito entrega en sucursal..."></textarea>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer bg-light">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success px-4 fw-bold">Confirmar y Enviar Solicitud</button>
+                    <div class="modal-footer border-0 bg-white p-4">
+                        <button type="button" class="btn btn-outline-secondary fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success px-4 fw-bold">Enviar Solicitud Formal</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    /* Transición suave para el hover de la fila */
+    .transition-hover {
+        transition: background-color 0.2s ease;
+    }
+    .transition-hover:hover {
+        background-color: #f8f9fa;
+    }
+    /* Ocultar flechas del input number en Chrome, Safari, Edge y Opera */
+    .input-cantidad::-webkit-outer-spin-button,
+    .input-cantidad::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    /* Ocultar flechas en Firefox */
+    .input-cantidad[type=number] {
+        -moz-appearance: textfield;
+    }
+</style>
 {% endblock %}

@@ -68,7 +68,10 @@
                                 {% for v in variantes %}
                                 <tr>
                                     <td class="ps-4 fw-bold">{{ v.codigo }}</td>
-                                    <td>{{ v.nombre_variante }}</td>
+                                    <td>
+                                        {{ v.nombre_variante }}
+                                        {% if not v.activo %}<span class="badge bg-danger ms-1">Oculta</span>{% endif %}
+                                    </td>
                                     <td>${{ v.precio }}</td>
                                     <td>
                                         {% if v.stock_actual <= 0 %} <span class="badge bg-danger">Agotado</span>
@@ -87,13 +90,23 @@
                                             class="btn btn-sm btn-outline-info" title="Gestionar Imágenes Extras"><i
                                                 class="bi bi-images"></i></a>
                                         
-                                        {# === FORMULARIO PARA ELIMINAR === #}
-                                        <form method="POST" action="{% url 'eliminar_variante' v.id %}" class="d-inline"
-                                            onsubmit="return confirm('¿Seguro que deseas eliminar esta variante?');">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                title="Eliminar Variante"><i class="bi bi-trash"></i></button>
-                                        </form>
+                                        {# === FORMULARIO PARA OCULTAR DEL CATÁLOGO === #}
+                                        {% if v.activo %}
+                                            <form method="POST" action="{% url 'eliminar_variante' v.id %}" class="d-inline"
+                                                onsubmit="return confirm('¿Ocultar esta variante? No se borrarán las cotizaciones históricas.');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-warning"
+                                                    title="Ocultar Variante"><i class="bi bi-eye-slash"></i></button>
+                                            </form>
+                                        {% else %}
+                                            <form method="POST" action="{% url 'restaurar_variante' v.id %}" class="d-inline"
+                                                onsubmit="return confirm('¿Volver a mostrar esta variante?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-warning" title="Restaurar Variante">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% empty %}

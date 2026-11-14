@@ -1,81 +1,91 @@
 {% extends 'catalogo/components/base.html' %}
 
 {% block content %}
-<style>
-    /*Estilos para que el form de django utilice el estilo de bootstrap*/
-    .django-form input {
-        display: block;
-        width: 100%;
-        padding: 0.375rem 0.75rem;
-        font-size: 1rem;
-        font-weight: 400;
-        line-height: 1.5;
-        color: #212529;
-        background-color: #f8f9fa;
-        background-clip: padding-box;
-        border: 1px solid #ced4da;
-        border-radius: 0.375rem;
-        margin-bottom: 1rem;
-    }
-
-    .django-form label {
-        font-weight: 600;
-        margin-bottom: 0.2rem;
-    }
-
-    .django-form ul.errorlist {
-        color: #dc3545;
-        font-size: 0.875rem;
-        list-style-type: none;
-        padding-left: 0;
-        margin-top: -0.5rem;
-        margin-bottom: 1rem;
-    }
-
-    .django-form .helptext {
-        font-size: 0.8rem;
-        color: #6c757d;
-        display: block;
-        margin-top: -0.8rem;
-        margin-bottom: 1rem;
-    }
-</style>
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
-    <div class="card shadow-lg border-0" style="width: 100%; max-width: 400;">
-        <div class="card-body p-5">
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 75vh;">
+    <div class="card shadow-lg border-0" style="width: 100%; max-width: 450px;">
+        <div class="card-body p-4 p-sm-5">
+            
+            <!-- Cabecera -->
             <div class="text-center mb-4">
-                <h3 class="fw-bold text-dark">HunarPack B2B</h3>
-                <p class="text-muted">Acceso Clientes</p>
+                <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 70px; height: 70px;">
+                    <i class="bi bi-person-lock display-5" style="color: #7BA356;"></i>
+                </div>
+                <h3 class="fw-bold text-dark mb-1">Portal de Clientes</h3>
+                <p class="text-muted small">Ingresa tus credenciales para acceder a HunarPack B2B.</p>
             </div>
-            <!-- Formulario de Inicio de Sesión -->
+
+            <!-- Mensajes de Error -->
+            {% if form.errors %}
+            <div class="alert alert-danger d-flex align-items-center p-3 mb-4 rounded-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
+                <div class="small fw-semibold">Usuario o contraseña incorrectos. Por favor, inténtalo de nuevo.</div>
+            </div>
+            {% endif %}
+
+            <!-- Formulario -->
             <form action="{% url 'login' %}" method="POST">
                 {% csrf_token %}
+                
+                <!-- Campo Usuario -->
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">Usuario</label>
-                    <input type="text" name="username" class="form-control bg-light">
+                    <label class="form-label fw-bold small text-muted">Usuario</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-secondary"></i></span>
+                        <input type="text" name="username" class="form-control bg-light border-start-0 ps-0" placeholder="Tu nombre de usuario" required autofocus>
+                    </div>
                 </div>
+
+                <!-- Campo Contraseña -->
                 <div class="mb-4">
-                    <label class="form-label fw-semibold">Contraseña</label>
-                    <input type="password" name="password" class="form-control bg-light">
+                    <label class="form-label fw-bold small text-muted">Contraseña</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-secondary"></i></span>
+                        <input type="password" name="password" class="form-control bg-light border-start-0 ps-0" placeholder="••••••••" required>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-dark w-100 fw-bold mb-3">Ingresar al Portal Cliente</button>
-                <div class="text-center mt-2 mb-2">
-                    <a href="{% url 'password_reset' %}" class="text-muted small text-decoration-none">
+
+                <!-- Botón Principal -->
+                <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm mb-3">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Ingresar al Portal
+                </button>
+
+                <!-- Enlaces de ayuda -->
+                <div class="text-center">
+                    <a href="{% url 'password_reset' %}" class="text-muted small text-decoration-none fw-semibold hover-primary">
                         ¿Olvidaste tu contraseña?
                     </a>
                 </div>
-                <div class="text-center mt-4">
-                    <small class="text-muted">¿Eres un cliente nuevo? <a href="{% url 'registro' %}"
-                            class="text-dark fw-bold text-decoration-none">Regístrate aquí</a></small>
-                </div>
             </form>
-            <!-- Control de Errores -->
-            {% if form.errors %}
-            <div class="alert alert-danger text-center p-2 mb-0" role="alert">
-                <small class="fw-semibold">Usuario o contraseña incorrectos. Por favor, inténtelo de nuevo.</small>
+
+            <hr class="my-4 text-muted opacity-25">
+
+            <!-- Enlace de Registro -->
+            <div class="text-center">
+                <span class="text-muted small">¿Eres un cliente nuevo?</span>
+                <a href="{% url 'registro' %}" class="text-decoration-none fw-bold ms-1" style="color: #7BA356;">
+                    Regístrate aquí
+                </a>
             </div>
-            {% endif %}
+            
         </div>
     </div>
 </div>
+
+<style>
+    /* Efecto hover para los enlaces de la paleta */
+    .hover-primary:hover {
+        color: #7BA356 !important;
+        transition: color 0.2s ease;
+    }
+    /* Estilo para los inputs cuando están enfocados */
+    .form-control:focus {
+        border-color: #7BA356;
+        box-shadow: 0 0 0 0.25rem rgba(123, 163, 86, 0.15);
+    }
+    /* Ajuste del input-group focus para que el ícono también cambie de color */
+    .input-group:focus-within .input-group-text {
+        border-color: #7BA356;
+        color: #7BA356 !important;
+    }
+</style>
 {% endblock %}

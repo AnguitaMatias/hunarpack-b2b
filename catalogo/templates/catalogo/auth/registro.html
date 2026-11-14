@@ -2,64 +2,131 @@
 
 {% block content %}
 <style>
-    /*Estilos para que el form de django utilice el estilo de bootstrap*/
-    .django-form input {
-        display: block;
-        width: 100%;
-        padding: 0.375rem 0.75rem;
-        font-size: 1rem;
-        font-weight: 400;
-        line-height: 1.5;
-        color: #212529;
-        background-color: #f8f9fa;
-        background-clip: padding-box;
-        border: 1px solid #ced4da;
-        border-radius: 0.375rem;
-        margin-bottom: 1rem;
-    }
-
-    .django-form label {
-        font-weight: 600;
-        margin-bottom: 0.2rem;
-    }
-
-    .django-form ul.errorlist {
-        color: #dc3545;
-        font-size: 0.875rem;
-        list-style-type: none;
-        padding-left: 0;
-        margin-top: -0.5rem;
-        margin-bottom: 1rem;
-    }
-
-    .django-form .helptext {
-        font-size: 0.8rem;
+    /* Ajustes finos para los textos de ayuda de Django */
+    .helptext {
+        font-size: 0.75rem;
         color: #6c757d;
         display: block;
-        margin-top: -0.8rem;
-        margin-bottom: 1rem;
+        margin-top: 0.3rem;
+        line-height: 1.2;
+    }
+    .errorlist {
+        color: #dc3545;
+        font-size: 0.8rem;
+        list-style-type: none;
+        padding-left: 0;
+        margin-top: 0.3rem;
+        margin-bottom: 0;
+    }
+    .form-control:focus {
+        border-color: #7BA356;
+        box-shadow: 0 0 0 0.25rem rgba(123, 163, 86, 0.15);
+    }
+    .input-group:focus-within .input-group-text {
+        border-color: #7BA356;
+        color: #7BA356 !important;
     }
 </style>
 
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
-    <div class="card shadow-lg border-0" style="width: 100%; max-width: 450px;">
-        <div class="card-body p-5">
+<div class="container d-flex justify-content-center align-items-center py-5">
+    <!-- Hacemos la tarjeta un poco más ancha para el registro -->
+    <div class="card shadow-lg border-0" style="width: 100%; max-width: 550px;">
+        
+        <div class="card-body p-4 p-sm-5">
+            
+            <!-- Cabecera -->
             <div class="text-center mb-4">
-                <h3 class="fw-bold text-dark">Registro de Usuario</h3>
-                <p class="text-muted">Únete a la comunidad HunarPack B2B</p>
+                <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 70px; height: 70px;">
+                    <i class="bi bi-person-plus display-5" style="color: #7BA356;"></i>
+                </div>
+                <h3 class="fw-bold text-dark mb-1">Crear una Cuenta</h3>
+                <p class="text-muted small">Únete a la red B2B de HunarPack.</p>
             </div>
-            <form action="{% url 'registro' %}" method="POST" class="django-form">
+
+            <!-- Errores generales del formulario (ej: contraseñas no coinciden) -->
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger p-3 mb-4 rounded-3 small fw-semibold" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ form.non_field_errors.0 }}
+            </div>
+            {% endif %}
+
+            <form action="{% url 'registro' %}" method="POST">
                 {% csrf_token %}
-                {{ form.as_p}}
-                <button type="submit" class="btn btn-dark w-100 fw-bold mt-2 mb-3">Registrarse</button>
+                
+                <!-- Usuario -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-muted">Nombre de Usuario <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-secondary"></i></span>
+                        <input type="text" name="username" class="form-control bg-light border-start-0 ps-0" placeholder="Ej: juan_perez" required>
+                    </div>
+                    {% if form.username.errors %}<div class="errorlist">{{ form.username.errors.0 }}</div>{% endif %}
+                </div>
+
+                <!-- Nombre y Apellido -->
+                <div class="row mb-3">
+                    <div class="col-12 col-sm-6 mb-3 mb-sm-0">
+                        <label class="form-label fw-bold small text-muted">Nombre</label>
+                        <input type="text" name="first_name" class="form-control bg-light" placeholder="Tu nombre">
+                        {% if form.first_name.errors %}<div class="errorlist">{{ form.first_name.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label fw-bold small text-muted">Apellido</label>
+                        <input type="text" name="last_name" class="form-control bg-light" placeholder="Tu apellido">
+                        {% if form.last_name.errors %}<div class="errorlist">{{ form.last_name.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-muted">Correo Electrónico <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-secondary"></i></span>
+                        <input type="email" name="email" class="form-control bg-light border-start-0 ps-0" placeholder="tu@empresa.cl" required>
+                    </div>
+                    <small class="helptext">Aquí recibirás tus cotizaciones y notificaciones.</small>
+                    {% if form.email.errors %}<div class="errorlist">{{ form.email.errors.0 }}</div>{% endif %}
+                </div>
+
+                <hr class="my-4 text-muted opacity-25">
+
+                <!-- Contraseña -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-muted">Contraseña <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-secondary"></i></span>
+                        <input type="password" name="password1" class="form-control bg-light border-start-0 ps-0" placeholder="Crea una contraseña segura" required>
+                    </div>
+                    {% if form.password1.errors %}<div class="errorlist">{{ form.password1.errors.0 }}</div>{% endif %}
+                </div>
+
+                <!-- Confirmar Contraseña -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold small text-muted">Confirmar Contraseña <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-shield-check text-secondary"></i></span>
+                        <input type="password" name="password2" class="form-control bg-light border-start-0 ps-0" placeholder="Repite la contraseña" required>
+                    </div>
+                    {% if form.password2.errors %}<div class="errorlist">{{ form.password2.errors.0 }}</div>{% endif %}
+                </div>
+
+                <!-- Botón -->
+                <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm mb-3">
+                    <i class="bi bi-check-circle me-1"></i> Crear mi Cuenta
+                </button>
             </form>
 
-            <div class="text-center mt-3">
-                <small class="text-muted">¿Ya tienes una cuenta? <a href="{% url 'login' %}"
-                        class="text-dark fw-bold text-decoration-none">Inicia sesión</a></small>
-            </div>
-        </div>
+            <hr class="my-4 text-muted opacity-25">
 
+            <!-- Enlace a Login -->
+            <div class="text-center">
+                <span class="text-muted small">¿Ya tienes una cuenta?</span>
+                <a href="{% url 'login' %}" class="text-decoration-none fw-bold ms-1" style="color: #7BA356;">
+                    Inicia sesión
+                </a>
+            </div>
+            
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -7,12 +7,21 @@
         transform: translateY(-2px);
         transition: all 0.3s ease;
     }
+    /* Ajuste responsivo para el carrusel */
+    .carousel-img-container {
+        height: 300px; /* Altura en celular */
+    }
+    @media (min-width: 768px) {
+        .carousel-img-container {
+            height: 400px; /* Altura en PC */
+        }
+    }
 </style>
 
 <div class="container mt-2 mb-5">
-    {# === BREADCRUMB === #}
-    <nav class="row mb-4 align-items-center" aria-label="breadcrumb">
-        <div class="col-md-7 mb-2 mb-md-0">
+    {# === BREADCRUMB Y BOTÓN VOLVER === #}
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+        <nav aria-label="breadcrumb" class="mb-2 mb-md-0">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item">
                     <a href="{% url 'lista_categorias' %}" class="text-decoration-none fw-bold" style="color: #7BA356;">Catálogo</a>
@@ -26,33 +35,31 @@
                     <li class="breadcrumb-item active text-muted">Sin Categoría</li>
                 {% endif %}
                 
-                <li class="breadcrumb-item active text-muted" aria-current="page">{{ producto.nombre }}</li>
+                <li class="breadcrumb-item active text-muted text-truncate" style="max-width: 150px;" aria-current="page">{{ producto.nombre }}</li>
             </ol>
+        </nav>
+        
+        <div>
+            {% if producto.categoria %}
+                <a href="{% url 'lista_productos' producto.categoria.id %}" class="btn btn-outline-secondary btn-sm fw-bold px-3 py-2" style="border-color: #7BA356; color: #7BA356;">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </a>
+            {% else %}
+                <a href="{% url 'lista_categorias' %}" class="btn btn-outline-secondary btn-sm fw-bold px-3 py-2" style="border-color: #7BA356; color: #7BA356;">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </a>
+            {% endif %}
         </div>
-        <div class="col-md-5">
-            <div class="d-flex justify-content-start justify-content-md-end">
-                {% if producto.categoria %}
-                    <a href="{% url 'lista_productos' producto.categoria.id %}" class="btn btn-outline-secondary btn-sm fw-bold px-3 py-2" style="border-color: #7BA356; color: #7BA356;">
-                        <i class="bi bi-arrow-left"></i> Volver a {{ producto.categoria.nombre }}
-                    </a>
-                {% else %}
-                    <a href="{% url 'lista_categorias' %}" class="btn btn-outline-secondary btn-sm fw-bold px-3 py-2" style="border-color: #7BA356; color: #7BA356;">
-                        <i class="bi bi-arrow-left"></i> Volver al Catálogo
-                    </a>
-                {% endif %}
-            </div>
-        </div>
-    </nav>
+    </div>
 
-    <div class="row bg-white p-4 rounded shadow-sm border-0">
+    <div class="row bg-white p-3 p-md-4 rounded shadow-sm border-0">
         {# === CARRUSEL DE IMAGENES === #}
         <div class="col-md-6 mb-4">
-            <div class="carousel slide rounded overflow-hidden shadow-sm" id="carruselProducto" data-bs-ride="false"
-                style="background-color: #FAF1EA; border: 1px solid #E2DCD0;">
-                <div class="carousel-inner" style="height: 400px;">
+            <div class="carousel slide rounded overflow-hidden shadow-sm" id="carruselProducto" data-bs-ride="false" style="background-color: #FAF1EA; border: 1px solid #E2DCD0;">
+                <div class="carousel-inner carousel-img-container">
                     {% if producto.imagen %}
                     <div class="carousel-item active h-100">
-                        <div class="d-flex w-100 h-100 align-items-center justify-content-center">
+                        <div class="d-flex w-100 h-100 align-items-center justify-content-center p-2">
                             <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="d-block img-fluid" style="max-height: 100%; object-fit: contain;">
                         </div>
                     </div>
@@ -68,7 +75,7 @@
                     {% for variante in variantes %}
                         {% for img in variante.imagenes_extra.all %}
                         <div class="carousel-item h-100">
-                            <div class="d-flex w-100 h-100 align-items-center justify-content-center">
+                            <div class="d-flex w-100 h-100 align-items-center justify-content-center p-2">
                                 <img src="{{ img.imagen.url }}" alt="Imagen extra" class="d-block img-fluid" style="max-height: 100%; object-fit: contain;">
                             </div>
                         </div>
@@ -76,34 +83,33 @@
                     {% endfor%}
                 </div>
     
+                {# Controles para el carrusel Movil #}
                 <button type="button" class="carousel-control-prev" data-bs-target="#carruselProducto" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon rounded-circle" aria-hidden="true" style="background-color: #7BA356; padding: 1.5rem;"></span>
+                    <span class="carousel-control-prev-icon rounded-circle" aria-hidden="true" style="background-color: #7BA356; padding: 1rem;"></span>
                 </button>
                 <button type="button" class="carousel-control-next" data-bs-target="#carruselProducto" data-bs-slide="next">
-                    <span class="carousel-control-next-icon rounded-circle" aria-hidden="true" style="background-color: #7BA356; padding: 1.5rem;"></span>
+                    <span class="carousel-control-next-icon rounded-circle" aria-hidden="true" style="background-color: #7BA356; padding: 1rem;"></span>
                 </button>
             </div>
         </div>
     
         {# === INFORMACIÓN Y SELECCIÓN DE LA VARIANTE === #}
-        <div class="col-md-6 ps-md-5">
-            <!-- BADGE PROTEGIDO -->
+        <div class="col-md-6 ps-md-4">
             {% if producto.categoria %}
-                <span class="badge mb-2 px-3 py-2" style="background-color: #7BA356; color: white; font-size: 0.9rem;">{{ producto.categoria.nombre }}</span>
+                <span class="badge mb-2 px-3 py-2" style="background-color: #7BA356; color: white; font-size: 0.8rem;">{{ producto.categoria.nombre }}</span>
             {% else %}
-                <span class="badge mb-2 px-3 py-2 bg-secondary" style="font-size: 0.9rem;">Sin Categoría</span>
+                <span class="badge mb-2 px-3 py-2 bg-secondary" style="font-size: 0.8rem;">Sin Categoría</span>
             {% endif %}
             
-            <h1 class="fw-bold mb-2" style="color: #2F3E2A;">{{ producto.nombre }}</h1>
-            <p class="text-muted mb-5 fs-5">{{ producto.descripcion }}</p>
+            <h1 class="fw-bold mb-2 fs-2 fs-md-1" style="color: #2F3E2A;">{{ producto.nombre }}</h1>
+            <p class="text-black text-opacity-75 mb-4 fs-6">{{ producto.descripcion }}</p>
     
-            <h5 class="fw-bold mb-3 border-bottom pb-2">Selecciona una presentación:</h5>
+            <h6 class="fw-bold mb-3 border-bottom pb-2">Selecciona una presentación:</h6>
     
             {# === FORM PARA IR AGREGANDO LAS VARIANTES AL CARRO === #}
             <form id="form-agregar">
-                <div class="mb-4">
-                    <select id="selector-variante" class="form-select form-select-lg mb-3 fw-bold shadow-sm"
-                        style="border: 2px solid #7BA356; color: #2F3E2A; background-color: #F4F1EA;">
+                <div class="mb-3">
+                    <select id="selector-variante" class="form-select form-select-lg mb-3 fw-bold shadow-sm fs-6" style="border: 2px solid #7BA356; color: #2F3E2A; background-color: #F4F1EA;">
                         {% for variante in variantes %}
                         <option value="{{ variante.id }}" data-codigo="{{ variante.codigo }}"
                             data-unidades="{{ variante.unidades_por_caja }}"
@@ -116,56 +122,55 @@
                             data-stock="{{ variante.stock_actual }}" {% if variante.stock_actual <= 0 %}disabled{% endif %}>
                             {{ variante.nombre_variante }} - {{ variante.codigo }}
                             {% if variante.stock_actual <= 0 %}Agotado{% endif %} </option>
-                                {% endfor %}
+                        {% endfor %}
                     </select>
                 </div>
     
                 {# === PANEL DE ESPECIFICACIONES === #}
                 <div class="card mb-4 border-0 shadow-sm" style="background-color: #E4EADF !important;">
-                    <div class="card-body">
-                        <h6 class="fw-bold border-bottom pb-2 mb-3"
-                            style="border-color: #7BA356 !important; color: #2F3E2A;">
-                            <i class="bi bi-info-circle-fill" style="color: #7BA356;"></i> Especificaciones Técnicas
+                    <div class="card-body p-3">
+                        <h6 class="fw-bold border-bottom pb-2 mb-3" style="border-color: #7BA356 !important; color: #2F3E2A; font-size: 0.95rem;">
+                            <i class="bi bi-info-circle-fill" style="color: #7BA356;"></i> Especificaciones
                         </h6>
-                        <div class="row g-3 small">
+                        <div class="row g-2 small">
                             <div class="col-6">
-                                <span class="text-muted d-block">Código</span>
+                                <span class="text-muted d-block" style="font-size: 0.75rem;">Código</span>
                                 <span class="fw-bold" id="spec-codigo">-</span>
                             </div>
                             <div class="col-6">
-                                <span class="text-muted d-block">Uds. por caja</span>
+                                <span class="text-muted d-block" style="font-size: 0.75rem;">Uds. por caja</span>
                                 <span class="fw-bold" id="spec-unidades">-</span>
                             </div>
                             <div class="col-6">
-                                <span class="text-muted d-block">Dimensiones</span>
+                                <span class="text-muted d-block" style="font-size: 0.75rem;">Dimensiones</span>
                                 <span class="fw-bold" id="spec-dimensiones">-</span>
                             </div>
                             <div class="col-6">
-                                <span class="text-muted d-block">Material</span>
+                                <span class="text-muted d-block" style="font-size: 0.75rem;">Material</span>
                                 <span class="fw-bold" id="spec-material">-</span>
                             </div>
                             <div class="col-6">
-                                <span class="text-muted d-block">Presentación</span>
+                                <span class="text-muted d-block" style="font-size: 0.75rem;">Presentación</span>
                                 <span class="fw-bold" id="spec-presentacion">-</span>
                             </div>
                             <div class="col-6">
-                                <span class="text-muted d-block">¿Apto Microondas?</span>
+                                <span class="text-muted d-block" style="font-size: 0.75rem;">¿Microondas?</span>
                                 <span class="fw-bold" id="spec-microondas">-</span>
                             </div>
                             <div class="col-12 mt-2">
-                                <span class="text-muted d-block">¿Ecológico?</span>
+                                <span class="text-muted d-block" style="font-size: 0.75rem;">¿Ecológico?</span>
                                 <span class="badge bg-success" id="spec-ecologico"></span>
                             </div>
-                            <div class="col-12 mt-3 pt-2 border-top" style="border-color: #7BA356 !important;">
-                                <span class="text-muted d-block">Nota Adicional</span>
+                            <div class="col-12 mt-2 pt-2 border-top" style="border-color: #7BA356 !important;">
+                                <span class="text-muted d-block" style="font-size: 0.75rem;">Nota Adicional</span>
                                 <span class="fst-italic" id="spec-nota" style="color: #6F4D38;">-</span>
                             </div>
                         </div>
                     </div>
                 </div>
     
-                <div class="d-grid gap-2">
-                    <button type="button" id="btn-agregar-detalle" class="btn btn-primary btn-lg fw-bold shadow-lg" style="font-size: 1.2rem;">
+                <div class="d-grid gap-2 mb-3">
+                    <button type="button" id="btn-agregar-detalle" class="btn btn-primary btn-lg fw-bold shadow-lg" style="font-size: 1.1rem;">
                         <i class="bi bi-cart-plus"></i> Agregar al Carrito
                     </button>
                 </div>
@@ -175,7 +180,6 @@
 </div>
 
 <script>
-    <!-- Lógica para que se actualicen las especificaciones al cambiar de una variante a otra -->
     document.addEventListener('DOMContentLoaded', function() {
         const selector = document.getElementById('selector-variante');
         const btnAgregar = document.getElementById('btn-agregar-detalle');
@@ -193,7 +197,6 @@
             document.getElementById('spec-ecologico').innerText = opcion.dataset.ecologico;
             document.getElementById('spec-nota').innerText = opcion.dataset.nota;
     
-            // Desahabilitar el boton agregar si no hay stock
             if (opcion.dataset.stock <= 0) {
                 btnAgregar.disabled = true;
                 btnAgregar.innerText = 'Sin Stock';
@@ -203,13 +206,9 @@
             }
         }
     
-        // Se ejecuta al cargar la página
         actualizarSpecs();
-    
-        // Se ejecutará cada vez que el usuario cambie de una variante en el select
         selector.addEventListener('change', actualizarSpecs);
     
-        // Lógica para agregar al carrito desde esta vista
         btnAgregar.addEventListener('click', function() {
             const varianteId = selector.value;
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -241,7 +240,6 @@
                     alert(data.mensaje);
                     btn.innerHTML = originalText;
                 } else {
-                    // Captura el error 'Variante no encontrada' o cualquier otro
                     alert("Error: " + (data.message || "No se pudo agregar."));
                     btn.innerHTML = originalText;
                 }
@@ -251,7 +249,6 @@
                 btn.innerHTML = originalText;
             })
             .finally(() => {
-                // Pase lo que pase, el botón se vuelve a habilitar
                 btn.disabled = false;
             });
         });

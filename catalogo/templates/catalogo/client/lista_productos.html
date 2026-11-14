@@ -1,58 +1,64 @@
 {% extends 'catalogo/components/base.html' %}
 
 {% block content %}
-<div class="container mt-4">
-    <!-- breadcrumbs -->
-    <nav class="mb-4" aria-label="breadcrumb">
+<div class="container mt-4 mb-5">
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'lista_categorias' %}" class="text-decoration-none">Catálogo</a></li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'lista_categorias' %}" class="text-decoration-none fw-bold" style="color: #7BA356;">Catálogo</a>
+            </li>
             {% if categoria_actual %}
-                <li class="breadcrumb-item active" aria-current="page">{{ categoria_actual.nombre }}</li>
+                <li class="breadcrumb-item active text-muted" aria-current="page">{{ categoria_actual.nombre }}</li>
             {% else %}
-                <li class="breadcrumb-item active" aria-current="page">Resultados de búsqueda</li>
+                <li class="breadcrumb-item active text-muted" aria-current="page">Resultados de Búsqueda</li>
             {% endif %}
         </ol>
     </nav>
 
+    <!-- Cabecera: Título y Buscador -->
     <div class="row mb-4 align-items-center">
-        <div class="col-md-6">
+        <div class="col-md-6 mb-3 mb-md-0">
             <h2 class="mb-0 fw-bold text-dark">
                 {% if categoria_actual %}{{ categoria_actual.nombre }}{% else %}Resultados de Búsqueda{% endif %}
             </h2>
         </div>
         <div class="col-md-6">
             <form action="" method="get" class="d-flex gap-2">
-                <div class="input-group">
+                <div class="input-group shadow-sm">
                     <input type="text" name="q" class="form-control border-secondary" value="{{ query|default_if_none:'' }}" placeholder="Buscar en esta categoría...">
-                    <button type="submit" class="btn btn-outline-secondary text-nowrap"><i class="bi bi-search"></i></button>
+                    <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
                 </div>
-                <a href="{% url 'lista_categorias' %}" class="btn btn-outline-secondary text-nowrap">Volver</a>
+                <a href="{% url 'lista_categorias' %}" class="btn btn-outline-secondary text-nowrap fw-bold">Volver</a>
             </form>
         </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+    <!-- Grilla de Productos -->
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4 mb-5">
         {% for producto in productos %}
         <div class="col">
             <div class="card h-100 shadow-sm border-0 hover-shadow">
-
-                <!-- Imagen del producto (usará placeholder si no hay) -->
-                <div class="bg-light text-center rounded-top"
-                    style="height: 200px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                
+                <!-- Imagen del producto -->
+                <div class="bg-light text-center rounded-top d-flex align-items-center justify-content-center" style="height: 220px; overflow: hidden;">
                     {% if producto.imagen %}
-                    <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="img-fluid"
-                        style="object-fit: cover; width: 100%; height: 100%;">
+                        <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="w-100 h-100" style="object-fit: cover;">
                     {% else %}
-                    <i class="bi bi-box-seam display-1 text-secondary opacity-25"></i>
+                        <i class="bi bi-box-seam display-1 text-secondary opacity-25"></i>
                     {% endif %}
                 </div>
-                <div class="card-body">
+                
+                <div class="card-body p-4">
                     <h5 class="card-title fw-bold text-dark mb-1">{{ producto.nombre }}</h5>
-                    <h6 class="card-subtitle mb-2 text-muted small">{{ producto.categoria.nombre }}</h6>
+                    <!-- PROTECCIÓN: Si no tiene categoría, mostramos "Producto General" -->
+                    <h6 class="card-subtitle mb-2 text-muted small">
+                        {% if producto.categoria %}{{ producto.categoria.nombre }}{% else %}Producto General{% endif %}
+                    </h6>
                     <p class="card-text text-secondary small text-truncate">{{ producto.descripcion|default:"Sin descripción." }}</p>
                 </div>
-                <div class="card-footer bg-white border-0 pb-3">
-                    <!-- Botón para poder ver el detalle y las variantes de los productos -->
+                
+                <div class="card-footer bg-white border-0 pb-4 px-4">
                     <a href="{% url 'detalle_producto' producto.id %}" class="btn btn-outline-dark w-100 fw-bold">
                         Ver Detalles <i class="bi bi-arrow-right"></i>
                     </a>
@@ -60,13 +66,16 @@
             </div>
         </div>
         {% empty %}
+        <!-- Sin Productos -->
         <div class="col-12">
-            <div class="alert alert-info text-center" role="alert">
-                No se encontraron productos con esos criterios.
+            <div class="d-flex flex-column align-items-center justify-content-center text-center text-muted py-5">
+                <i class="bi bi-inbox display-1 mb-3 text-secondary opacity-25"></i>
+                <h4 class="fw-bold">No encontramos productos</h4>
+                <p>Intenta con otra búsqueda o vuelve al catálogo principal.</p>
+                <a href="{% url 'lista_categorias' %}" class="btn btn-primary mt-2 fw-bold">Volver al Catálogo</a>
             </div>
         </div>
         {% endfor %}
     </div>
 </div>
 {% endblock %}
-
