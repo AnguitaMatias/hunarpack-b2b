@@ -639,7 +639,7 @@ def eliminar_cotizacion(request, cotizacion_id):
         # Paso 2. Eliminar la cotización (incluido el detalle)
         cotizacion.delete()
 
-    messages.success(request, f"La cotizacion #{cotizacion.id} fue eliminada y el stock devuelto a bodega.")
+    messages.success(request, f"La cotizacion fue eliminada y el stock devuelto a bodega.")
     return redirect('dashboard')
 
 # FUNCIONES PARA AL ADMIN

@@ -1,56 +1,108 @@
 {% extends 'catalogo/components/base.html' %}
+{% load filtros %}
 
 {% block content %}
+<style>
+    /* Estilos para los inputs */
+    .form-control:focus {
+        border-color: #7BA356;
+        box-shadow: 0 0 0 0.25rem rgba(123, 163, 86, 0.15);
+    }
+    .transition-hover {
+        transition: background-color 0.2s ease;
+    }
+    .transition-hover:hover {
+        background-color: #f8f9fa;
+    }
+    /* Ocultar la flechas para los inputs de número */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    input[type=number] {
+        -moz-appearance: textfield;
+    }
+</style>
+
 <div class="container mt-4 mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+
+    {# Header #}
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h2 class="fw-bold text-dark">Fijar Precios - Solicitud #{{ cotizacion.id }}</h2>
-            <p class="text-muted mb-0">Cliente: <strong>{{ cotizacion.empresa }}</strong> | Contacto: {{ cotizacion.nombre_contacto }}</p>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="bi bi-tags me-2"></i> Fijar Precios <span class="text-muted">#{{ cotizacion.id }}</span>
+            </h2>
+            <p class="text-muted mb-0 small">
+                Cliente: <strong>{{ cotizacion.empresa }}</strong> | Contacto: {{ cotizacion.nombre_contacto }}
+            </p>
         </div>
-        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Volver al Dashboard</a>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary fw-bold align-self-start align-self-md-auto">
+            <i class="bi bi-arrow-left"></i> Volver al Panel
+        </a>
     </div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
+    <div class="card shadow-lg border-0">
+        <div class="card-body p-0">
             <form method="POST">
                 {% csrf_token %}
-                <div class="table-responsive">
-                    <table class="table align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Producto Solicitado</th>
-                                <th class="text-center">Cantidad</th>
-                                <th class="text-center" style="width: 150px;">Descuento (%)</th>
-                                <th class="text-end" style="width: 200px;">Precio Unitario Neto ($)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for detalle in detalles %}
-                            <tr>
-                                <td class="fw-semibold">
-                                    {{ detalle.variante.producto.nombre }}<br>
-                                    <small class="text-muted">{{ detalle.variante.nombre_variante }} ({{ detalle.variante.codigo }})</small>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-dark fs-6">{{ detalle.cantidad }} unid.</span>
-                                </td>
-                                <!-- Input descuento -->
-                                <td class="text-center">
-                                    <input type="number" name="descuento_{{ detalle.id }}" class="form-control text-center bg-light" min="0" max="100" value="0" placeholder="% (0 - 100)">
-                                </td>
-                                <!-- Input precio unitario -->                                
-                                <td class="text-end">
-                                    <input type="number" name="precio_{{ detalle.id }}" class="form-control text-end border-primary border-2 shadow-sm" required min="1" placeholder="Ej: 500">
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                
+                {# Encabezado solo disponible en vista de escritorio #}
+                <div class="d-none d-md-flex row bg-light p-3 m-0 border-bottom fw-bold text-muted small text-uppercase">
+                    <div class="col-md-4">Producto Solicitado</div>
+                    <div class="col-md-2 text-center">Cantidad</div>
+                    <div class="col-md-2 text-center">Desc. (%)</div>
+                    <div class="col-md-4 text-end pe-4">Precio Unitario ($)</div>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mt-4 bg-light p-3 rounded">
-                    <p class="text-muted mb-0 small"><i class="bi bi-info-circle"></i> Los subtotales y el total se calcularán automáticamente al guardar.</p>
-                    <button type="submit" class="btn btn-success px-5 fw-bold"><i class="bi bi-save"> Generar Cotización</i></button>
+                {# Fila de los Productos (se verán como tarjetas en Móvil) #}
+                {% for detalle in detalles %}
+                <div class="row p-3 p-md-4 m-0 border-bottom align-items-center transition-hover">
+
+                    {# Producto #}
+                    <div class="col-12 col-md-4 mb-3 mb-md-0">
+                        <span class="d-md-none text-muted small text-uppercase fe-bold d-block mb-1">Producto</span>
+                        <h6 class="fw-bold text-dark mb-1">{{ detalle.variante.producto.nombre }}</h6>
+                        <span class="badge text-bg-light border me-1" style="color: #7BA356;">{{ detalle.variante.nombre_variante }}</span>
+                        <small class="text-muted">Cód: {{ detalle.variante.codigo }}</small>
+                    </div>
+
+                    {# Cantidad #}
+                    <div class="col-4 col-md-2 text-center mb-3 mb-md-0">
+                        <span class="d-md-none text-muted small text-uppercase fw-bold d-block mb-1">Cant.</span>
+                        <span class="badge bg-dark fs-6">{{ detalle.cantidad }} un.</span>                        
+                    </div>
+
+                    {# Descuento #}
+                    <div class="col-8 col-md-2 mb-3 mb-md-0">
+                        <span class="d-md-none text-muted small text-uppercase fw-bold d-block mb-1">Descuento (%)</span>
+                        <div class="input-group shadow-sm">
+                            <input type="number" name="descuento_{{detalle.id}}" class="form-control text-center bg-light" min="0" max="100" value="0" placeholder="0">
+                            <span class="input-group-text bg-light"><i class="bi bi-percent text-muted"></i></span>
+                        </div>
+                    </div>
+
+                    {# Precio #}
+                    <div class="col-12 col-md-4 mt-2 mt-md-0">
+                        <span class="d-md-none text-muted small text-uppercase fw-bold d-block mb-1">Precio Unitario ($)</span>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white fw-bold" style="color: #7BA356;">$</span>
+                            <input type="number" name="precio_{{ detalle.id }}" class="form-control text-end fw-bold border-primary border-2" required min="1" value="{{ detalle.variante.precio|floatformat:0 }}" placeholder="Ej: 500">
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {# Footer para el botón guardar #}
+                <div class="bg-light p-4 rounded-bottom">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                        <p class="text-muted mb-0 small">
+                            <i class="bi bi-info-circle-fill me-1" style="color: #7BA356;"></i> Los subtotaltes, el IVA y el total se calcularán automáticamente al guardar.
+                        </p>
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold px-5 shadow-sm w-100 w-md-auto">
+                            <i class="bi bi-file-earmark-check me-1"></i> Generar Cotización
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>

@@ -1,133 +1,196 @@
 {% extends 'catalogo/components/base.html' %}
 
 {% block content %}
+<style>
+    /* Estilos para los inputs del formulario */
+    .form-control:focus {
+        border-color: #7BA356;
+        box-shadow: 0 0 0 0.25rem rgba(123, 163, 86, 0.15);
+    }
+    .transition-hover {
+        transition: background-color 0.2s ease;
+    }
+    .transition-hover:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+
 <div class="container mt-4 mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    
+    {# Header #}
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h2 class="fw-bold text-dark"><i class="bi bi-people"></i> Gestión de Staff</h2>
-            <p class="text-muted mb-0">Administración de accesos para ejecutivos de ventas.</p>
+            <h2 class="fw-bold text-dark mb-1"><i class="bi bi-people me-2"></i> Gestión de Equipo</h2>
+            <p class="text-muted mb-0 small">Administra los accesos para tus ejecutivos de ventas.</p>
         </div>
-        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Volver al Panel</a>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary fw-bold align-self-start align-self-md-auto">
+            <i class="bi bi-arrow-left"></i> Volver al Panel
+        </a>
     </div>
 
     <div class="row">
-        <!-- Formulario para la creación de usuarios staff -->
-        <div class="col-md-4 mb-4">
+        {# Formulario para la creación de usuarios (staff) #}
+        <div class="col-12 col-lg-4">
             <div class="card shadow-sm border-0">
-                <div class="card-header bg-dark text-white py-3">
-                    <h5 class="mb-0 fw bold"><i class="bi bi-person-plus"></i> Nuevo Ejecutivo</h5>
+                <div class="card-header bg-dark text-white py-3 border-0">
+                    <h5 class="mb-0 fw bold"><i class="bi bi-person-plus me-2"></i> Nuevo Ejecutivo</h5>
                 </div>
-                <div class="card-body bg-light">
+                <div class="card-body p-4">
                     <form method="POST">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label for="" class="form-label fw-bold small">Nombre de Usuario</label>
-                            <input type="text" name="username" class="form-control" required
-                                placeholder="Ej: m.huenchuleo">
+                            <label for="" class="form-label fw-bold small text-muted">Nombre de Usuario</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-at text-secondary"></i></span>
+                                <input type="text" name="username" class="form-control border-start-0 ps-0" placeholder="Ej: m.huenchuleo" required>
+                            </div>
                         </div>
                         <div class="row mb-3">
-                            <div class="col">
-                                <label class="form-label fw-bold small">Nombre</label>
-                                <input type="text" name="first_name" class="form-control" required>
+                            <div class="col-12 col-sm-6 mb-3 mb-sm-0">
+                                <label class="form-label fw-bold small text-muted">Nombre</label>
+                                <input type="text" name="first_name" class="form-control" placeholder="Ej: Manuel" required>
                             </div>
-                            <div class="col">
-                                <label class="form-label fw-bold small">Apellido</label>
-                                <input type="text" name="last_name" class="form-control" required>
+                            <div class="col-12 col-sm-6">
+                                <label class="form-label fw-bold small text-muted">Apellido</label>
+                                <input type="text" name="last_name" class="form-control" placeholder="Ej: Huenchuleo" required>
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small">Correo Electrónico</label>
-                            <input type="email" name="email" class="form-control" required>
+                            <label class="form-label fw-bold small text-muted">Correo Electrónico</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-envelope text-secondary"></i> 
+                                </span>
+                                <input type="email" name="email" class="form-control border-start-0 ps-0" placeholder="juanperez@correo.cl" required>
+                            </div>
                         </div>
                         <div class="mb-4">
-                            <label class="form-label fw-bold small">Contraseña Temporal</label>
-                            <input type="password" name="password" class="form-control" required>
+                            <label class="form-label fw-bold small text-muted">Contraseña Temporal</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-key text-secondary"></i>
+                                </span>
+                                <input type="password" name="password" class="form-control border-start-0 ps-0" placeholder="••••••••" required>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.7rem;">El ejecutivo podrá cambiarla luego</small>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100 fw-bold">Crear Cuenta Staff</button>
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">
+                            <i class="bi bi-person-plus-fill me-1"></i> Crear Cuenta
+                        </button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- Lista del Staff existente -->
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-card-list"></i> Equipo Actual</h5>
+        {# Staff Existente #}
+        <div class="col-12 col-lg-8">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3 border-bottom-0">
+                    <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-card-list me-2"></i> Equipo Actual</h5>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-4">Usuario</th>
-                                    <th>Nombre Completo</th>
-                                    <th>Rol</th>
-                                    <th>Último Acceso</th>
-                                    <th class="text-center pe-4">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for integrante in equipo %}
-                                <tr>
-                                    <td class="ps-4 fw-bold text-secondary">{{ integrante.username }}</td>
-                                    <td>{{ integrante.first_name }} {{ integrante.last_name }}</td>
-                                    <td>
-                                        {% if integrante.is_superuser %}
-                                        <span class="badge bg-danger">Superadmin (Dueño)</span>
-                                        {% else %}
-                                        <span class="badge bg-primary">Ejecutivo de Ventas</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-muted small">
-                                        {{ integrante.last_login|date:"d M Y, H:i"|default:"Nunca" }}
-                                    </td>
-                                    <td class="text-center pe-4">
-                                        {% if not integrante.is_superuser %}
-                                            <a href="{% url 'editar_staff' integrante.id %}"
-                                                class="btn btn-sm btn-outline-primary" title="Editar">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar"
-                                                data-bs-toggle="modal" data-bs-target="#modalEliminar{{ integrante.id }}">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
 
-                                            <!-- Modal Eliminar -->
-                                            <div class="modal face" id="modalEliminar{{ integrante.id }}" tabindex="-1"
-                                                aria-hidden="true">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header bg-danger text-white">
-                                                            <h5 class="modal-title"><i class="bi bi-exclamation-triangle"></i> Confirmar Eliminación</h5>
-                                                            <button type="button" class="btn-close btn close-white" data-bs-dismiss="modal"></button>
-                                                        </div>
-                                                        <div class="modal-body text-start">
-                                                            ¿Estás seguro que deseas eliminar a <strong>{{ integrante.first_name }} {{ integrante.last_name }}</strong> ({{ integrante.username }})<br>
-                                                            <small class="text-muted">Esta acción no se puede deshacer. Sus cotizaciones históricas se mantendrán, pero quedarán sin ejecutivo asignado.</small>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                            <form action="{% url 'eliminar_staff' integrante.id %}" method="POST" class="d-inline">
-                                                                {% csrf_token %}
-                                                                <button type="submit" class="btn btn-danger">Sí, Eliminar</button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        {% else %}
-                                            <span class="text-muted small">-</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    {# Encabezado (solo visible en escritorio) #}
+                    <div class="d-none d-md-flex row bg-light p-3 m-0 border-bottom fw-bold text-muted small text-uppercase">
+                        <div class="col-md-3">Usuario</div>
+                        <div class="col-md-3">Nombre Completo</div>
+                        <div class="col-md-2">Rol</div>
+                        <div class="col-md-2">Último Acceso</div>
+                        <div class="col-md-2 text-end pe-4">Acciones</div>
                     </div>
-                </div>
+
+                    {# Filas del staff (como tarjetas en móvil) #}
+                    {% for integrante in equipo %}
+                    <div class="row p-3 m-0 border-bottom align-items-center transition-hover">
+
+                        {# Usuario #}
+                        <div class="col-12 col-md-3 mb-2 mb-md-0">
+                            <span class="d-md-none text-muted small d-block">Usuario</span>
+                            <span class="fw-bold text-dark">{{ integrante.username }}</span>
+                        </div>
+
+                        {# Nombre Completo #}
+                        <div class="col-12 col-md-3 mb-2 mb-md-0">
+                            <span class="d-md-none text-muted small d-block">Nombre Completo</span>
+                            <span class="text-secondary">{{ integrante.first_name }} {{ integrante.last_name }}</span>
+                        </div>
+
+                        {# Rol #}
+                        <div class="col-6 col-md-2 mb-3 mb-md-0">
+                            <span class="d-md-none text-muted small d-block">Rol</span>
+                            {% if integrante.is_superuser %}
+                                <span class="badge bg-danger shadow-sm">Superadmin</span>
+                            {% else %}
+                                <span class="badge bg-primary shadow-sm">Ventas</span>
+                            {% endif %}
+                        </div>
+
+                        {# Último acceso #}
+                        <div class="col-6 col-md-2 mb-3 mb-md-0 text-end text-md-start">
+                            <span class="d-md-none text-muted small d-block">Último Acceso</span>
+                            <small class="text-muted">
+                                {{ integrante.last_login|date:"d M Y"|default:"Nunca" }}
+                            </small>
+                        </div>
+
+                        {# Acciones #}
+                        <div class="col-12 col-md-2 text-md-end pe-md-4 mt-2 mt-md-0">
+                            {% if not integrante.is_superuser %}
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{% url 'editar_staff' integrante.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ integrante.id }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            {% else %}
+                                <span class="text-muted small d-block text-end">-</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-people display-1 text-secondary opacity-25 d-block"></i>
+                        <h5 class="fw-bold text-dark">No hay ejecutivos registrados</h5>
+                        <p class="mb-0">Usa el formulario para agregar a tu primer vendedor.</p>
+                    </div>
+                    {% endfor %}
+                </div>   
             </div>
         </div>
     </div>
 </div>
+{# Modales de Eliminación #}
+{% for integrante in equipo %}
+{% if not integrante.is_superuser %}
+<div class="modal fade" id="modalEliminar{{ integrante.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-exclamation-triangle me-2"></i> Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-start">
+                ¿Estás seguro que deseas eliminar a <strong>{{ integrante.first_name }} {{ integrante.last_name }}</strong> ({{ integrante.username }})?
+                <br><br>
+                <div class="alert alert-warning mb-0 small border-0">
+                    <i class="bi bi-info-circle-fill me-1"></i> Esta acción n ose peude deshacer. Sus cotizaciones históricas se mantendrán, pero quedarán sin ejecutivo asignado.
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-light">
+                <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                <form action="{% url 'eliminar_staff' integrante.id %}" method="POST" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger fw-bold">Sí, Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
 {% endblock %}

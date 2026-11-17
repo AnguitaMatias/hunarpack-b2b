@@ -5,13 +5,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <!-- Inyección del Token CSRF -->
+    {# Inyección del Token CSRF #}
     <meta name="csrf-token" content="{{ csrf_token }}">
-    <!-- Bloque de Título -->
+    {# Bloque de Título #}
     <title>{% block title %}Catálogo B2B - HunarPack{% endblock %}</title>
-    <!-- Favicon -->
-    <link rel="icon" href="image/png" href="{% static 'catalogo/img/favicon.png' %}">
-    <!-- Bootstrap CSS -->
+    {# Favicon #}
+    <link rel="icon" type="image/png" href="{% static 'catalogo/img/favicon.png' %}">
+    {# Bootstrap CSS #} 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <style>
@@ -134,12 +134,11 @@
             .container { padding-left: 15px; padding-right: 15px; }
         }
     </style>
-
-    <!-- Bloque adicional para CSS extra -->
+    {% block extra_css %}{% endblock %}
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">
 
-    <!-- Notificaciones en Toast -->
+    {# Notificaciones Globales en Toast #}
      <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
         <div id="sistemaToast" class="toast align-items-center text-white border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
@@ -150,15 +149,16 @@
         </div>
      </div>
 
-    <!-- Navbar -->
+    {# Navbar #}
     {% include 'catalogo/components/navbar.html' %}
 
-    <!-- Contenido Principal -->
+    {# Contenido Principal #}
      <main class="flex-shrink-0 mb-4">
+        {# Mensajes de Django (Alertas de error, éxito) #}
         {% if messages %}
             <div class="container mt-3">
                 {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm auto-dismiss-alert" role="alert">
                         {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div> 
@@ -170,15 +170,27 @@
         {% endblock %}
      </main>
 
-    <!-- Footer -->
+    {# Footer #}
     {% include 'catalogo/components/footer.html' %}
 
-    <!-- Scripts -->
-    <!-- Bootstrap -->
+    {# Scripts #}
+    {# Bootstrap JS #}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    <!-- JS Personalizado -->
+    {# JS personalizado #}
     <script src="{% static 'catalogo/js/carrito.js' %}"></script>
-    <!-- Bloque JS extra -->
+    {# JS para cerrado de las alertas Django #}
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const alerts = document.querySelectorAll('.auto-dismiss-alert');
+
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 2500);
+            });
+        });
+    </script>
      {% block extra_js %}{% endblock %}
 </body>
 </html>

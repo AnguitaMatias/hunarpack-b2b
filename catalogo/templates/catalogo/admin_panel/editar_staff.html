@@ -1,56 +1,102 @@
 {% extends 'catalogo/components/base.html' %}
 
 {% block content %}
+<style>
+    /* Estilos para los inputs */
+    .form-control:focus {
+        border-color: #7BA356;
+        box-shadow: 0 0 0 0.25rem rgba(123, 163, 86, 0.15);
+    }
+    .input-group:focus-within .input-group-text {
+        border-color: #7BA356;
+        color: #7BA356 !important;
+    }
+    /*Estilo para los inputs deshabilitados*/
+    .form-control:disabled {
+        background-color: #e9ecef;
+        cursor: not-allowed;
+    }
+</style>
+
 <div class="container mt-4 mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+
+    {# Header #}
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h2 class="fw-bold text-dark"><i class="bi bi-pencil-square"></i> Editar Ejecutivo</h2>
-            <p class="text-muted mb-0">Modificando la cuenta de <strong>{{ integrante.username }}</strong></p>
+            <h2 class="fw-bold text-dark mb-1"><i class="bi bi-person-gear me-2"></i> Editar Ejecutivo</h2>
+            <p class="text-muted mb-0 small">Modificando la cuenta de <strong>{{ integrante.username }}</strong></p>
         </div>
-        <a href="{% url 'gestion_personal' %}" class="btn btn-outline-secondary">Volver al Equipo</a>
+        <a href="{% url 'gestion_personal' %}" class="btn btn-outline-secondary fw-bold align-self-start align-self-md-auto">
+            <i class="bi bi-arrow-left"></i> Volver al Equipo
+        </a>
     </div>
 
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-dark text-white py-3">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-person-gear"></i> Datos del Ejecutivo</h5>
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-dark text-white py-3 border-0">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-person-lines-fill me-2"></i> Datos del Ejecutivo</h5>
                 </div>
-                <div class="card-body bg-light">
+                <div class="card-body p-4 p-sm-5 bg-light">
                     <form method="POST">
                         {% csrf_token %}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small">Nombre de Usuario (no editable)</label>
-                            <input type="text" class="form-control" value="{{ integrante.username }}" disabled>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col">
-                                <label class="form-label fw-bold small">Nombre</label>
-                                <input type="text" name="first_name" class="form-control"
-                                    value="{{ integrante.first_name }}" required>
-                            </div>
-                            <div class="col">
-                                <label class="form-label fw-bold small">Apellido</label>
-                                <input type="text" name="last_name" class="form-control"
-                                    value="{{ integrante.last_name }}" required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small">Correo Electrónico</label>
-                            <input type="email" name="email" class="form-control" value="{{ integrante.email }}" required>
-                        </div>
-                        <hr class="my-4">
-                        <div class="alert alert-warning small py-2 mb-3">
-                            <i class="bi bi-shield-lock"></i><strong> Resetear contraseña</strong> (opcional)
-                        </div>
+
+                        {# Nombre de Usuario (no modificable) #}
                         <div class="mb-4">
-                            <label class="form-label fw-bold small">Nueva Contraseña</label>
-                            <input type="password" name="password" class="form-control" placeholder="Dejar en blanco para no cambiar">
-                            <small class="text-muted">Si escribes algo aquí, la clave actual del ejecutivo quedará invalidada.</small>
+                            <label class="form-label fw-bold small text-muted">Nombre de Usuario</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i class="bi bi-at text-secondary"></i></span>
+                                <input type="text" class="form-control border-start-0 ps-0" value="{{ integrante.username }}" disabled>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.7rem;">El identificador de usuario no se puede modificar.</small>
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100 fw-bold">
-                            <i class="bi bi-save"></i> Guardar Cambios
+                        {# Nombre y Apellido #}
+                        <div class="row mb-4">
+                            <div class="col-12 col-sm-6 mb-3 mb-sm-0">
+                                <label class="form-label fw-bold small text-muted">Nombre</label>
+                                <input type="text" name="first_name" class="form-control"
+                                    value="{{ integrante.first_name }}" placeholder="Ej: Manuel" required>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <label class="form-label fw-bold small text-muted">Apellido</label>
+                                <input type="text" name="last_name" class="form-control"
+                                    value="{{ integrante.last_name }}" placeholder="Ej: Huenchuleo" required>
+                            </div>
+                        </div>
+
+                        {# Correo Electrónico #}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-muted">Correo Electrónico</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i class="bi bi-envelope text-secondary"></i></span>
+                                <input type="email" name="email" class="form-control border-start-0 ps-0" value="{{ integrante.email }}" placeholder="juan@correo.cl" required>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.75rem;">Aquí recibirá las notificaciones de nuevas cotizaciones.</small>
+                        </div>
+
+                        <hr class="my-4 text-muted opacity-25">
+                        
+                        {# Contraseña #}
+                        <div class="alert alert-warning border-0 bg-opacity-10 small py-3 mb-3 d-flex align-items-start gap-2">
+                            <i class="bi bi-shield-lock-fill fs-5 text-warning"></i>
+                            <div>
+                                <strong>Resetear Contraseña</strong><br>
+                                <span class="text-muted" style="font-size: 0.75rem;">Solo completa este campo si necesitas asignarle una nueva clave al ejecutivo.</span>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-muted">Nueva Contraseña</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i class="bi bi-key text-secondary"></i></span>
+                                <input type="password" name="password" class="form-control border-start-0 ps-0" placeholder="Dejar en blanco para no cambiar">
+                            </div>
+                        </div>
+
+                        {# Botón Guardar #}
+
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm mt-2">
+                            <i class="bi bi-save me-1"></i> Guardar Cambios
                         </button>
                     </form>
                 </div>
