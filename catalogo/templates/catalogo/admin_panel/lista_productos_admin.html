@@ -1,39 +1,48 @@
 {% extends 'catalogo/components/base.html' %}
 
 {% block content %}
+
+<style>
+    .hover-shadow:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        transform: translateY(-3px);
+        transition: all 0.3s ease;
+    }
+</style>
+
 <div class="container mt-4 mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+
+    {# Header #}
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            {% if categoria_actual %}
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-2">
-                    <li class="breadcrumb-item"><a href="{% url 'lista_categorias_admin' %}"
-                            class="text-decoration-none">Catálogo</a></li>
-                    <li class="breadcrumb-item active" aria-current="paage">{{ categoria_actual.nombre }}</li>
+            <nav aria-label="breadcrumb" class="mb-2">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'lista_categorias_admin' %}" class="text-decoration-none fw-bold"
+                            style="color: #7BA356;">Catálogo</a>
+                    </li>
+                    <li class="breadcrumb-item active text-muted" aria-current="page">{{ categoria_actual.nombre }}</li>
                 </ol>
             </nav>
-            <h2 class="fw-bold text-dark">{{ categoria_actual.nombre }}</h2>
-            {% else %}
-            <h2 class="fw-bold text-dark">Productos sin Categoría</h2>
-            {% endif %}
+            <h2 class="fw-bold text-dark mb-1">{{ categoria_actual.nombre }}</h2>
+            <p class="text-muted small mb-0">Gestiona los productos de esta familia.</p>
         </div>
-        <div>
-            {% if categoria_actual %}
-            <a href="{% url 'crear_producto' %}?categoria={{ categoria_actual.id }}"
-                class="btn btn-primary fw-bold me-2">
-                <i class="bi bi-plus-circle"></i> Nuevo Producto Aquí
+        <div class="d-flex flex-wrap gap-2 align-self-start align-self-md-auto">
+            <a href="{% url 'crear_producto' %}?categoria={{ categoria_actual.id }}" class="btn btn-primary fw-bold">
+                <i class="bi bi-plus-circle me-1"></i> Nuevo Producto
             </a>
-            <a href="{% url 'lista_categorias_admin' %}" class="btn btn-outline-secondary">Volver a Categorías</a>
-            {% else %}
-            <a href="{% url 'lista_categorias_admin' %}" class="btn btn-outline-secondary">Volver a Categorías</a>
-            {% endif %}
+            <a href="{% url 'lista_categorias_admin' %}" class="btn btn-outline-secondary fw-bold">
+                <i class="bi bi-arrow-left me-1"></i> Volver a Categorías
+            </a>
         </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {# Grid de Productos #}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
         {% for producto in productos %}
         <div class="col">
-            <div class="card h-100 shadow-sm border-0">
+            <div class="card h-100 shadow-sm border-0 hover-shadow">
+                {# Imagen #}
                 <div class="position-relative" style="height: 180px;">
                     {% if producto.imagen %}
                     <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="w-100 h-100 rounded-top"
@@ -44,55 +53,65 @@
                     </div>
                     {% endif %}
                 </div>
-                <div class="card-body">
-                    <h5 class="card-title fw-bold mb-1">
+                {# Tarjeta #}
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold mb-2 text-dark">
                         {{ producto.nombre }}
-                        {% if not producto.activo %}<span class="badge bg-danger ms-2">Oculto</span>{% endif %}
+                        {% if not producto.activo %}
+                            <span class="badge bg-danger ms-2 align-text-bottom">Oculto</span>
+                        {% endif %}
                     </h5>
-                    <p class="card-text text-muted small">{{ producto.descripcion|truncatechars:60 }}</p>
+                    <p class="card-text text-muted small mb-3">{{ producto.descripcion|truncatechars:60|default:"Sin descripción." }}</p>
                     <span class="badge bg-secondary">{{ producto.variantes.count }} Variantes</span>
                 </div>
-                <div class="card-footer bg-white border-0 pb-3 d-flex justify-content-between">
-                    <div>
-                        <!-- Botón Editar corregido -->
-                        <a href="{% url 'editar_producto' producto.id %}" class="btn btn-sm btn-outline-primary"
-                            title="Editar">
+                {# Botones #}
+                <div class="card-footer bg-white border-0 pb-4 px-4 d-flex justify-content-between align-items-center gap-2">
+                    <div class="d-flex-gap-1">
+                        {# Editar #}
+                        <a href="{% url 'editar_producto' producto.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
                             <i class="bi bi-pencil"></i>
                         </a>
-
+                        {# Ocultar/Restaurar #}
                         {% if producto.activo %}
                         {# Botón Ocultar #}
-                        <form method="POST" action="{% url 'eliminar_producto' producto.id %}" class="d-inline"
-                            onsubmit="return confirm('¿Ocultar este producto del catálogo? Se conservarán las cotizaciones históricas.');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-warning" title="Ocultar del Catálogo"><i
-                                    class="bi bi-eye-slash"></i></button>
-                        </form>
+                            <form method="POST" action="{% url 'eliminar_producto' producto.id %}" class="d-inline"
+                                onsubmit="return confirm('¿Ocultar este producto del catálogo? Se conservarán las cotizaciones históricas.');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-warning" title="Ocultar del Catálogo"><i
+                                        class="bi bi-eye-slash"></i></button>
+                            </form>
                         {% else %}
                         {# Botón Restaurar #}
-                        <form method="POST" action="{% url 'restaurar_producto' producto.id %}" class="d-inline"
-                            onsubmit="return confirm('¿Volver a mostrar este producto en el catálogo?');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-success"
-                                title="Restaurar en el Catálogo">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </form>
+                            <form method="POST" action="{% url 'restaurar_producto' producto.id %}" class="d-inline"
+                                onsubmit="return confirm('¿Volver a mostrar este producto en el catálogo?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-success"
+                                    title="Restaurar en el Catálogo">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </form>
                         {% endif %}
                     </div>
+                    {# Variantes #}
                     <a href="{% url 'gestionar_variantes' producto.id %}"
-                        class="btn btn-sm btn-outline-success fw-bold">
+                        class="btn btn-sm btn-outline-success fw-bold w-50">
                         <i class="bi bi-boxes"></i> Variantes
                     </a>
                 </div>
             </div>
         </div>
         {% empty %}
+        {# Estado vacío #}
         <div class="col-12">
-            <div class="alert alert-warning text-center py-5">
-                <i class="bi bi-inbox display-1 text-muted mb-3 d-block"></i>
-                <h5>No hay productos en esta categoría</h5>
-                <p class="mb-0">Usa el botón de arriba para crear el primero.</p>
+            <div class="card shadow-sm border-0 py-5 text-center">
+                <div class="card-body">
+                    <i class="bi bi-inbox display-1 text-secondary mb-3 opacity-25 d-block"></i>
+                    <h5 class="fw-bold text-dark">No hay productos en esta categoría</h5>
+                    <p class="text-muted">Aún no has agregado ningún producto aquí.</p>
+                    <a href="{% url 'crear_producto' %}?categoria={{ categoria_actual.id }}" class="btn btn-primary fw-bold mt-2">
+                        Crea un producto aquí
+                    </a>
+                </div>
             </div>
         </div>
         {% endfor %}

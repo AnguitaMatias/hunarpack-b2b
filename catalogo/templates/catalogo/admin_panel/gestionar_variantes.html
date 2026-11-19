@@ -1,124 +1,239 @@
 {% extends 'catalogo/components/base.html' %}
+{% load filtros %}
+
+{% block title %}Gestionar Variantes{% endblock %}
 
 {% block content %}
+<style>
+    .hover-shadow:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #7BA356;
+        box-shadow: 0 0 0 0.25rem rgba(123, 163, 86, 0.15);
+    }
+    input[type="file"]::file-selector-button {
+        background-color: #f8f9fa;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        margin-right: 1rem;
+        transition: 0.2s ease;
+    }
+    input[type="file"]::file-selector-button:hover {
+        background-color: #e9ecef;
+    }
+</style>
+
 <div class="container mt-4 mb-5">
     {# === HEADER === #}
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h2 class="fw-bold text-dark">Variantes de: {{ producto.nombre }}</h2>
-            <p class="text-muted mb-0">Categoría: {{ producto.categoria.nombre }}</p>
+            <h2 class="fw-bold text-dark mb-1">Variantes de: {{ producto.nombre }}</h2>
+            <p class="text-muted mb-0 small">
+                {% if producto.categoria %}
+                    Categoría: <strong>{{ producto.categoria.nombre }}</strong>
+                {% else %}
+                    Producto sin Categoría asignada
+                {% endif %}
+            </p>
         </div>
-        <a href="{% url 'lista_categorias_admin' %}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Volver al Catálogo
-        </a>
+        {# Botones #}
+        {% if producto.categoria %}
+            <a href="{% url 'lista_productos_por_categoria' producto.categoria.id %}" class="btn btn-outline-secondary fw-bold align-self-start align-self-md-auto">
+                <i class="bi bi-arrow-left me-1"></i> Volver a Productos
+            </a>
+        {% else %}
+            <a href="{% url 'lista_categorias_admin' %}" class="btn btn-outline-secondary fw-bold align-self-start align-self-md-auto">
+                <i class="bi bi-arrow-left me-1"></i> Volver a Productos
+            </a>
+        {% endif %}
     </div>
 
-    <div class="row">
-        {# === FORMULARIO DE CREACION DE VARIANTES (IZQUIERDA) === #}
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-dark text-white py-3">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-plus-square"></i> Nueva Variante</h5>
+    <div class="row g-4">
+        {# === Formulario de creación de las variantes === #}
+        <div class="col-12 col-xl-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-dark text-white py-3 border-0">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-plus-square me-1"></i> Nueva Variante</h5>
                 </div>
-                <div class="card-body bg-light">
+                <div class="card-body p-4 bg-light">
                     <form method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="row g-3">
-                            <div class="col-12">{{ form.codigo.label_tag }} {{ form.codigo }}</div>
-                            <div class="col-12">{{ form.nombre_variante.label_tag }} {{ form.nombre_variante }}</div>
-                            <div class="col-6">{{ form.precio.label_tag }} {{ form.precio }}</div>
-                            <div class="col-6">{{ form.unidades_por_caja.label_tag }} {{ form.unidades_por_caja }}</div>
-                            <div class="col-6">{{ form.stock_actual.label_tag }} {{ form.stock_actual }}</div>
-                            <div class="col-6">{{ form.stock_minimo.label_tag }} {{ form.stock_minimo }}</div>
-                            <div class="col-12">{{ form.dimensiones.label_tag }} {{form.dimensiones}}</div>
-                            <div class="col-12">{{ form.material.label_tag }} {{ form.material }}</div>
-                            <div class="col-12">{{ form.presentacion.label_tag }} {{ form.presentacion }}</div>
-                            <div class="col-12">{{ form.imagen_principal.label_tag }} {{ form.imagen_principal }}</div>
-                            <div class="col-12">{{ form.nota.label_tag }} {{ form.nota }}</div>
-                            <div class="col-6 form-check ms-3">
-                                {{ form.apto_microondas }} <label class="form-check-label small">Microondas</label>
+                            
+                            {# Código/Nombre #}
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-muted">Código / SKU</label>
+                                {{ form.codigo }}
                             </div>
-                            <div class="col-5 form-check">
-                                {{ form.es_ecologico }} <label class="form-check-label small">Ecológico</label>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-muted">Nombre de la Variante</label>
+                                {{ form.nombre_variante }}
+                            </div>
+                            
+                            <div class="col-12">
+                                <hr class="text-muted opacity-25 my-1">
+                            </div>
+                            
+                            {# Precio / Stock #}
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold small text-muted">Precio (CLP)</label>
+                                {{ form.precio }}
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold small text-muted">Uds. por Caja</label>
+                                {{ form.unidades_por_caja }}
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold small text-muted">Stock Actual</label>
+                                {{ form.stock_actual }}
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold small text-muted">Stock Crítico</label>
+                                {{ form.stock_minimo }}
+                            </div>
+
+                            <div class="col-12">
+                                <hr class="text-muted opacity-25 my-1">
+                            </div>
+
+                            {# Especificaciones #}
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-muted">Dimensiones</label>
+                                {{form.dimensiones}}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-muted">Material</label>
+                                {{ form.material }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-muted">Presentación</label>
+                                {{ form.presentacion }}
+                            </div>
+
+                            {# Imagen/Nota #}
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-muted">Imagen Principal</label>
+                                {{ form.imagen_principal }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-muted">Nota Adicional</label>
+                                {{ form.nota }}
+                            </div>
+
+                            {# Checkbox #}
+                            <div class="col-12 mt-3">
+                                <div class="form-check form-switch">
+                                    {{ form.apto_microondas }}
+                                    <label class="form-check-label small fw-bold" for="{{ form.apto_microondas.id_for_label }}">
+                                        ¿Apto para Microondas?
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mt-2">
+                                    {{ form.es_ecologico }}
+                                    <label class="form-check-label small fw-bold" for="{{ form.es_ecologico.id_for_label }}">
+                                        ¿Es Ecológico?
+                                    </label>
+                                </div>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100 fw-bold mt-4"><i class="bi bi-floppy2"></i>
-                            Guardar Variante</button>
+
+                        {# Guardar #}
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2 mt-4 shadow-sm">
+                            <i class="bi bi-save me-1"></i> Guardar Variante
+                        </button>
                     </form>
                 </div>
             </div>
         </div>
 
-        {# === TABLA DE VARIANTES EXISTENTES (DERECHA) === #}
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0">
+        {# === Variantes existentes === #}
+        <div class="col-12 col-xl-8">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3 border-bottom-0">
+                    <h5 class="mb-0 fw-bold text-primary">
+                        <i class="bi bi-boxes me-1"></i> Variantes Registradas
+                    </h5>
+                </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-4">Código</th>
-                                    <th>Nombre Variante</th>
-                                    <th>Precio</th>
-                                    <th>Stock</th>
-                                    <th class="text-end pe-4">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for v in variantes %}
-                                <tr>
-                                    <td class="ps-4 fw-bold">{{ v.codigo }}</td>
-                                    <td>
-                                        {{ v.nombre_variante }}
-                                        {% if not v.activo %}<span class="badge bg-danger ms-1">Oculta</span>{% endif %}
-                                    </td>
-                                    <td>${{ v.precio }}</td>
-                                    <td>
-                                        {% if v.stock_actual <= 0 %} <span class="badge bg-danger">Agotado</span>
-                                            {% else %}
-                                            {{ v.stock_actual }} un.
-                                            {% endif %}
-                                    </td>
-                                    <td class="text-end pe-4">
-                                        {# === BOTÓN DE EDITAR === #}
-                                        <a href="{% url 'editar_variante' v.id %}"
-                                            class="btn btn-sm btn-outline-primary" title="Editar Variante"><i
-                                                class="bi bi-pencil"></i></a>
-                                        
-                                        {# === BOTÓN DE LA GALERÍA === #}
-                                        <a href="{% url 'gestionar_imagenes_variante' v.id %}"
-                                            class="btn btn-sm btn-outline-info" title="Gestionar Imágenes Extras"><i
-                                                class="bi bi-images"></i></a>
-                                        
-                                        {# === FORMULARIO PARA OCULTAR DEL CATÁLOGO === #}
-                                        {% if v.activo %}
-                                            <form method="POST" action="{% url 'eliminar_variante' v.id %}" class="d-inline"
-                                                onsubmit="return confirm('¿Ocultar esta variante? No se borrarán las cotizaciones históricas.');">
-                                                {% csrf_token %}
-                                                <button type="submit" class="btn btn-sm btn-outline-warning"
-                                                    title="Ocultar Variante"><i class="bi bi-eye-slash"></i></button>
-                                            </form>
-                                        {% else %}
-                                            <form method="POST" action="{% url 'restaurar_variante' v.id %}" class="d-inline"
-                                                onsubmit="return confirm('¿Volver a mostrar esta variante?');">
-                                                {% csrf_token %}
-                                                <button type="submit" class="btn btn-sm btn-outline-warning" title="Restaurar Variante">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                            </form>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="5" class="text-center py-4 text-muted">
-                                        Este producto aún no tiene variantes. Agrega la primera usando el formulario.
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    
+                    {# Encabezados solo visibles en escritorio #}
+                    <div class="d-none d-lg-flex row bg-light p-3 m-0 border-bottom fw-bold text-muted small text-uppercase">
+                        <div class="col-lg-3">Código / Nombre</div>
+                        <div class="col-lg-2 text-center">Precio</div>
+                        <div class="col-lg-2 text-center">Stock</div>
+                        <div class="col-lg-5 text-end pe-4">Acciones</div>
                     </div>
+
+                                        {# Variantes (serán tarjetas en un móvil) #}
+                    {% for v in variantes %}
+                    <div class="row p-3 m-0 border-bottom align-items-center transition-hover">
+                        {# Código / Nombre #}
+                        <div class="col-12 col-lg-3 mb-2 mb-lg-0">
+                            <span class="d-lg-none text-muted small d-block">Código / Nombre</span>
+                            <div class="fw-bold text-dark">{{ v.codigo }}</div>
+                            <small class="text-muted">
+                                {{ v.nombre_variante }}
+                                {% if not v.activo %}<span class="badge bg-danger ms-1">Oculta</span>{% endif %}
+                            </small>
+                        </div>
+
+                        {# Precio #}
+                        <div class="col-6 col-lg-2 mb-2 mb-lg-0 text-start text-lg-center">
+                            <span class="d-lg-none text-muted small d-block">Precio</span>
+                            <span class="fw-bold" style="color: #7BA356;">${{ v.precio|peso }}</span>
+                        </div>
+
+                        {# Stock #}
+                        <div class="col-6 col-lg-2 mb-3 mb-lg-0 text-end text-lg-center">
+                            <span class="d-lg-none text-muted small d-block">Stock</span>
+                            {% if v.stock_actual <= 0 %}
+                                <span class="badge bg-danger">Agotado</span>
+                            {% elif v.stock_actual <= v.stock_minimo %}
+                                <span class="badge bg-warning text-dark">Crítico {{ v.stock_actual }}</span>
+                            {% else %}
+                                <span class="badge bg-success">{{ v.stock_actual }} un.</span>
+                            {% endif %}
+                        </div>
+
+                        {# Acciones #}
+                        <div class="col-12 col-lg-5 text-end pe-lg-4 mt-2 mt-lg-0">
+                            <div class="d-flex flex-wrap justify-content-end gap-2">
+                                <a href="{% url 'editar_variante' v.id %}" class="btn btn-sm btn-outline-primary fw-bold" title="Editar">
+                                    <i class="bi bi-pencil"></i> <span class="d-lg-none">Editar</span>
+                                </a>
+                                <a href="{% url 'gestionar_imagenes_variante' v.id %}" class="btn btn-sm btn-outline-info fw-bold" title="Galería">
+                                    <i class="bi bi-images"></i> <span class="d-lg-none">Galería</span>
+                                </a>
+
+                                {% if v.activo %}
+                                    <form action="{% url 'eliminar_variante' v.id %}" method="POST" class="d-inline" onsubmit="return confirm('¿Ocultar esta variante?')">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-warning fw-bold" title="Ocultar">
+                                            <i class="bi bi-eye-slash"></i> <span class="d-lg-none">Ocultar</span>
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <form action="{% url 'restaurar_variante' v.id %}" method="POST" class="d-inline" onsubmit="return confirm('¿Volver a mostrar esta variante?')">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-success fw-bold" title="Restaurar">
+                                            <i class="bi bi-eye"></i> <span class="d-lg-none">Restaurar</span>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-box display-1 text-secondary opacity-25 mb-3 d-block"></i>
+                        <h5 class="fw-bold text-dark">No hay variantes registradas</h5>
+                        <p class="mb-0">Este producto aún no tiene presentaciones creadas.</p>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>

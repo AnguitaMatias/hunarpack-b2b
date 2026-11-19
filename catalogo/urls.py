@@ -61,9 +61,6 @@ urlpatterns = [
     path('panel/categorias/eliminar/<int:categoria_id>/', views.eliminar_categoria, name='eliminar_categoria'),
     path('panel/categorias/editar/<int:categoria_id>/', views.editar_categoria, name='editar_categoria'),
     # == PRODUCTO
-    # Productos sin categoriaa
-    path('panel/catalogo/', views.lista_productos_admin, name='lista_productos_admin'),
-    # Productos con categoría
     path('panel/catalogo/categoria/<int:categoria_id>/', views.lista_productos_admin, name='lista_productos_por_categoria'),
     path('panel/catalogo/crear/', views.crear_producto, name='crear_producto'),
     path('panel/catalogo/editar/<int:producto_id>/', views.editar_producto, name='editar_producto'),

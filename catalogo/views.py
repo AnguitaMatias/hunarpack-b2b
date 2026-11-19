@@ -827,12 +827,8 @@ def eliminar_categoria(request, categoria_id):
 # === PRODUCTOS === 
 @staff_login
 def lista_productos_admin(request, categoria_id=None):
-    if categoria_id:
-        categoria_actual = get_object_or_404(Categoria, id=categoria_id)
-        productos = Producto.objects.filter(categoria=categoria_actual)
-    else:
-        categoria_actual = None
-        productos = Producto.objects.filter(categoria__isnull=True)
+    categoria_actual = get_object_or_404(Categoria, id=categoria_id)
+    productos = Producto.objects.filter(categoria=categoria_actual)
     
     return render(request, 'catalogo/admin_panel/lista_productos_admin.html', {
         'productos': productos,
@@ -854,7 +850,7 @@ def crear_producto(request):
             producto_creado = form.instance
             if producto_creado.categoria:
                 return redirect('lista_productos_por_categoria', categoria_id=producto_creado.categoria.id)
-            return redirect('lista_productos_admin')
+            return redirect('lista_categorias_admin')
     else:
         # Si viene desde una categoría, se inicial el formulario con esa categoría.
         if cat_id:
@@ -862,7 +858,10 @@ def crear_producto(request):
         else:
             form = ProductoForm()
 
-    return render(request, 'catalogo/admin_panel/crear_producto.html', {'form': form})
+    return render(request, 'catalogo/admin_panel/crear_producto.html', {
+        'form': form,
+        'cat_id': cat_id
+    })
 # EDITAR
 @staff_login
 def editar_producto(request, producto_id):
@@ -874,7 +873,7 @@ def editar_producto(request, producto_id):
             messages.success(request, "Producto actualizado correctamente.")
             if producto.categoria:
                 return redirect('lista_productos_por_categoria', categoria_id=producto.categoria.id)
-            return redirect('lista_productos_admin')
+            return redirect('lista_categorias_admin')
     else:
         form = ProductoForm(instance=producto)
         
@@ -897,7 +896,7 @@ def eliminar_producto(request, producto_id):
         
         if cat_id:
             return redirect('lista_productos_por_categoria', categoria_id=cat_id)
-        return redirect('lista_productos_admin')
+        return redirect('lista_categorias_admin')
     return redirect('lista_categorias_admin')
 
 def restaurar_producto(request, producto_id):
@@ -913,7 +912,7 @@ def restaurar_producto(request, producto_id):
 
         if producto.categoria:
             return redirect('lista_productos_por_categoria', categoria_id=producto.categoria.id)
-        return redirect('lista_productos_admin')
+        return redirect('lista_categorias_admin')
     return redirect('lista_categorias_admin')
 
 # === VARIANTES ===
