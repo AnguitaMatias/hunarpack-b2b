@@ -1,23 +1,23 @@
 {% load static %}
 <nav class="navbar navbar-dark bg-dark mb-4 shadow-sm py-2 py-md-3">
     <div class="container flex-nowrap">
-        <!-- Logo -->
+        {# logo #}
         <a href="{% url 'landing_page' %}" class="navbar-brand mb-0 p-0 me-2 bg-white rounded p-1">
             <img src="{% static 'catalogo/img/logo.png' %}" alt="HunarPack B2B" style="height: 35px; width: auto; max-width: 150px; object-fit: contain;" class="d-md-none">
             <img src="{% static 'catalogo/img/logo.png' %}" alt="HunarPack B2B" style="height: 45px; width: auto; max-width: 200px; object-fit: contain;" class="d-none d-md-block">
         </a>
 
-        <!-- Contenedor derecho (carro + menú usuario) -->
+        {# contador carro y menú #}
         <div class="d-flex align-items-center gap-3 gap-md-3 ms-auto">
             <a href="{% url 'resumen_carrito' %}" class="btn btn-outline-light position-relative px-2 px-md-3" title="Ver mi carrito">
                 <i class="bi bi-cart3"></i>
                 <span class="d-none d-sm-inline ms-1">Carro</span>
-                <!-- Contador -->
+                {# contador #}
                 <span id="contador-carrito" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm">
                     {{ total_carrito_global }}
                 </span>
             </a>
-            <!-- Menú de usuario -->
+            {# menú usuario #}
         {% if user.is_authenticated %}
             <div class="dropdown">
                 <button type="button" class="btn btn-dark dropdown-toggle px-2 px-md-3" data-bs-toggle="dropdown" aria-expanded="false">

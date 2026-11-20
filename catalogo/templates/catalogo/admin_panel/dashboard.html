@@ -70,7 +70,7 @@
                         <div class="d-flex flex-wrap gap-2">
                             {% for var in stock_critico %}
                                 <span class="badge {% if var.stock_actual <= 0 %}bg-danger{% else %}bg-warning text-dark{% endif %} text-truncate" style="max-width: 200px;" title="{{ var.producto.nombre }} - {{ var.nombre_variante }}">
-                                    {{ var.codigo }}: {{ var.stock_actual }} un.
+                                    {{ var.producto.nombre }} {{ var.nombre_variante}}: {{ var.stock_actual }} un.
                                 </span>
                             {% endfor %}
 

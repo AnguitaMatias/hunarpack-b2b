@@ -521,7 +521,7 @@ def dashboard(request):
             Q(rut_empresa__icontains=q_pendientes)
         )
     # Paginador (max 10/pag)
-    paginador_pendientes = Paginator(pendientes_list, 10)
+    paginador_pendientes = Paginator(pendientes_list, 6)
     page_pendientes = request.GET.get('page_pendientes')
     pendientes = paginador_pendientes.get_page(page_pendientes)
 
@@ -535,7 +535,7 @@ def dashboard(request):
             Q(nombre_contacto__icontains=q_respondidas) |
             Q(rut_empresa__icontains=q_respondidas)
         )
-    paginador_respondidas = Paginator(respondidas_list, 10)
+    paginador_respondidas = Paginator(respondidas_list, 6)
     page_respondidas = request.GET.get('page_respondidas')
     respondidas = paginador_respondidas.get_page(page_respondidas)
 

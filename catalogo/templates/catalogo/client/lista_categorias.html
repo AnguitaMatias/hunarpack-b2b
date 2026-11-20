@@ -1,68 +1,112 @@
 {% extends 'catalogo/components/base.html' %}
 
+{% block title %}Catálogo HunarPack{% endblock %}
+
 {% block content %}
+
+<style>
+    .hover-shadow {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-shadow:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        transform: translateY(-3px);
+    }
+    @media (max-width: 575.98px) {
+        .card-categoria {
+            min-height: 130px !important;
+        }
+        .card-categoria h3 {
+            font-size: 1rem;
+        }
+        .card-categoria .small {
+            font-size: 0.75rem;
+        }
+        .card-categoria .card-img-overlay {
+            padding: 0.75rem !important;
+        }
+    }
+</style>
+
 <div class="container mt-4 mb-5">
+    {# Header #}
     <div class="text-center mb-5">
         <h2 class="fw-bold text-dark">Nuestro Catálogo</h2>
         <p class="text-muted">Selecciona una categoría para explorar nuestros productos.</p>
     </div>
 
-    <!-- Buscador -->
+    {# buscador #}
     <div class="row justify-content-center mb-5">
-        <div class="col-12 col-md-8">
+        <div class="col-12 col-md-8 col-lg-6">
             <form action="{% url 'lista_categorias' %}" method="GET" class="input-group shadow-sm">
-                <input type="text" name="q" class="form-control py-2 py-md-3" placeholder="Buscar producto, código o descripción...">
-                <button type="submit" class="btn btn-dark px-3 px-md-4 fw-bold"><i class="bi bi-search"></i> <span class="d-none d-sm-inline">Buscar</span></button>
+                <input type="text" name="q" class="form-control" placeholder="Buscar producto, código o descripción..." value="{{ query|default:'' }}">
+                <button type="submit" class="btn btn-dark px-3 fw-bold">
+                    <i class="bi bi-search"></i>
+                </button>
             </form>
         </div>
     </div>
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+
+    {# grid de las categorías #}
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-2 g-md-4 mb-5">
         {% for categoria in categorias %}
         <div class="col">
             <a href="{% url 'lista_productos' categoria.id %}" class="text-decoration-none">
-                <div class="card h-100 shadow-sm border-0 text-white overflow-hidden hover-shadow" style="min-height: 200px;">
-                    <div class="position-absolute w-100 h-100" style="z-index: 1; background: linear-gradient(135deg, #7B9669 0%, #6C8480 100%);"></div>
+                <div class="card card-categoria h-100 shadow-sm border-0 text-white overflow-hidden hover-shadow position-relative" style="min-height: 220px;">
+                    {# imagen #}
                     {% if categoria.imagen %}
                         <img src="{{ categoria.imagen.url }}" alt="{{ categoria.nombre }}" class="position-absolute w-100 h-100" style="object-fit: cover; z-index: 0;">
                     {% else %}
-                        <div class="position-absolute w-100 h-100 bg-secondary" style="background: linear-gradient(135deg, #C4754C 0%, #7AB356 100%); z-index: 0;"></div>
+                        <div class="position-absolute w-100 h-100" style="background: linear-gradient(135deg, #E3AE8F 0%, #97E069 100%); z-index: 0;"></div>
                     {% endif %}
-
+                    {# overlay #}
+                    <div class="position-absolute w-100 h-100" style="background: linear-gradient(to top, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 100%); z-index: 1;"></div>
+                    {# contenido #}
                     <div class="card-img-overlay d-flex flex-column justify-content-end p-4" style="z-index: 2;">
-                        <h3 class="fw-bold mb-1">{{ categoria.nombre }}</h3>
-                        <span class="small">Ver productos <i class="bi bi-arrow-right"></i></span>
+                        <h3 class="fw-medium mb-1">{{ categoria.nombre }}</h3>
+                        <span class="small fw-semibold">Ver productos <i class="bi bi-arrow-right"></i></span>
                     </div>
                 </div>
             </a>
         </div>
         {% empty %}
         <div class="col-12 text-center py-5">
-            <p class="text-muted">Aún no hay categorías registradas.</p>
+            <i class="bi bi-tags display-1 text-secondary opacity-25 mb-3 d-block"></i>
+            <h5 class="fw-bold text-dark">No hay categorías disponibles</h5>
+            <p class="text-muted">Pronto estaremos agregando nuevas familias de productos.</p>
         </div>
         {% endfor %}
     </div>
+    
+    {# Productos sin Categoría #}
     {% if productos_sin_categoria %}
-    <hr class="my-5">
+    <hr class="my-5 text-muted opacity-25">
     <div class="text-center mb-4">
-        <h3 class="text-dark fw-bold">Otros Productos</h3>
+        <h3 class="text-dark fw-bold">
+            <i class="bi bi-box-seam me-2"></i> Otros Productos
+        </h3>
         <p class="text-muted">Productos disponibles que aún no tienen una familia asignada.</p>
     </div>
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-3 g-md-4">
         {% for producto in productos_sin_categoria %}
         <div class="col">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="bg-light text-center rounded-top" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+            <div class="card h-100 shadow-sm border-0 hover-shadow">
+                {# imagen #}
+                <div class="bg-light text-center rounded-top" style="height: 200px; overflow: hidden;">
                     {% if producto.imagen %}
-                        <img src="{{ producto.imagen.url }}" class="img-fluid" style="object-fit: cover; width: 100%; height: 100%;">
+                        <img src="{{ producto.imagen.url }}" class="w-100 h-100" style="object-fit: cover;" alt="{{ producto.nombre }}">
                     {% else %}
-                        <i class="bi bi-box-seam display-1 text-secondary opacity-25"></i>
+                        <div class="d-flex align-items-center justify-content-center h-100 w-100">
+                            <i class="bi bi-box-seam display-1 text-secondary opacity-25"></i>
+                        </div>
                     {% endif %}
                 </div>
-                <div class="card-body">
+                {# contenido #}
+                <div class="card-body p-4">
                     <h5 class="card-title fw-bold text-dark mb-1">{{ producto.nombre }}</h5>
                     <p class="card-text text-secondary small text-truncate">{{ producto.descripcion|default:"Sin descripción." }}</p>
                 </div>
-                <div class="card-footer bg-white border-0 pb-3">
+                <div class="card-footer bg-white border-0 pb-4 px-4">
                     <a href="{% url 'detalle_producto' producto.id %}" class="btn btn-outline-dark w-100 fw-bold">
                         Ver Detalles <i class="bi bi-arrow-right"></i>
                     </a>
