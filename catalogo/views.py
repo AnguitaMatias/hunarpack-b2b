@@ -12,8 +12,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth import logout, login as auth_login
 from django.contrib.auth.views import PasswordChangeView
 from django.core.mail import EmailMultiAlternatives
+from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, F
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import get_template, render_to_string
@@ -499,13 +500,53 @@ class CambiarContrasena(PasswordChangeView):
 # DASHBOARD (STAFF / ADMIN)
 @staff_login
 def dashboard(request):
-    cotizaciones_pendientes = Cotizacion.objects.filter(estado__in=['PENDIENTE', 'EN_REVISION']).order_by('-fecha_creacion')
-    cotizaciones_respondidas = Cotizacion.objects.filter(estado='RESPONDIDA').order_by('-fecha_creacion')
+    # Obteneción de stock crítico:
+    stock_critico_query = VarianteProducto.objects.filter(
+        activo=True,
+        stock_actual__lte=F('stock_minimo')
+    ).order_by('stock_actual')
+
+    total_stock_critico = stock_critico_query.count()
+
+    stock_critico = stock_critico_query[:5]
+
+    # Cotizaciones pendientes
+    pendientes_list = Cotizacion.objects.filter(estado__in=['PENDIENTE', 'EN_REVISION']).order_by('-fecha_creacion')
+    q_pendientes = request.GET.get('q_pendientes')
+    if q_pendientes:
+        pendientes_list = pendientes_list.filter(
+            Q(id__icontains=q_pendientes) |
+            Q(empresa__icontains=q_pendientes) |
+            Q(nombre_contacto__icontains=q_pendientes) |
+            Q(rut_empresa__icontains=q_pendientes)
+        )
+    # Paginador (max 10/pag)
+    paginador_pendientes = Paginator(pendientes_list, 10)
+    page_pendientes = request.GET.get('page_pendientes')
+    pendientes = paginador_pendientes.get_page(page_pendientes)
+
+    # Cotizaciones Respondidas
+    respondidas_list = Cotizacion.objects.filter(estado='RESPONDIDA').order_by('-fecha_creacion')
+    q_respondidas = request.GET.get('q_respondidas')
+    if q_respondidas:
+        respondidas_list = respondidas_list.filter(
+            Q(id__icontains=q_respondidas) |
+            Q(empresa__icontains=q_respondidas) |
+            Q(nombre_contacto__icontains=q_respondidas) |
+            Q(rut_empresa__icontains=q_respondidas)
+        )
+    paginador_respondidas = Paginator(respondidas_list, 10)
+    page_respondidas = request.GET.get('page_respondidas')
+    respondidas = paginador_respondidas.get_page(page_respondidas)
 
     contexto = {
-        'pendientes': cotizaciones_pendientes,
-        'respondidas': cotizaciones_respondidas,
-        'total_pendientes': cotizaciones_pendientes.count(),
+        'pendientes': pendientes,
+        'respondidas': respondidas,
+        'total_pendientes': pendientes_list.count(),
+        'stock_critico': stock_critico,
+        'total_stock_critico': total_stock_critico,
+        'q_pendientes': q_pendientes,
+        'q_respondidas': q_respondidas,
     }
 
     return render(request, 'catalogo/admin_panel/dashboard.html', contexto)
