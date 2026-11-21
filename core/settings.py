@@ -181,3 +181,22 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = 'lista_categorias'
 LOGOUT_REDIRECT_URL = 'lista_categorias'
+
+
+# --- LOGGING PARA PRODUCCIÓN ---
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
