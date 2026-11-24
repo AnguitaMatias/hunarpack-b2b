@@ -1053,3 +1053,12 @@ def eliminar_imagen_variante(request, imagen_id):
         messages.success(request, "Imagen eliminado correctamente.")
         return redirect('gestionar_imagenes_variante', variante_id = variante_id)
     return redirect('lista_productos_admin')
+
+
+# == Keep Alive para Render ==
+def health_check(request):
+    """
+    Endpoint ligero para mantener despierto el servicio en Render.
+    No consulta la base de datos ni rederiza templates.
+    """
+    return HttpResponse("OK", status=200)

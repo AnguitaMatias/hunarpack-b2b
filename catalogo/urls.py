@@ -73,4 +73,7 @@ urlpatterns = [
     path('panel/catalogo/variantes/restaurar/<int:variante_id>/', views.restaurar_variante, name='restaurar_variante'),
     path('panel/catalogo/variante/<int:variante_id>/imagenes/', views.gestionar_imagenes_variante, name='gestionar_imagenes_variante'),
     path('panel/catalogo/imagen/eliminar/<int:imagen_id>/', views.eliminar_imagen_variante, name='eliminar_imagen_variante'),
+
+    # --- KEEP ALIVE ---
+    path('health/', views.health_check, name='health_check'),
 ]

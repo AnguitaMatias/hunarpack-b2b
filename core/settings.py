@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'catalogo',
     'django.contrib.humanize',
+    'anymail',
 ]
 
 # =====================================================================================
@@ -131,28 +132,17 @@ MEDIA_URL = '/media/'
 # =====================================================================================
 # 9. CONFIGURACIÓN DE CORREO
 # =====================================================================================
-if os.environ.get('EMAIL_USE_REAL_SMTP') == 'True':
-    MAILERS = {
-        'default': {
-            'BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
-            'OPTIONS': {
-                'host': 'smtp.gmail.com',
-                'port': 587,
-                'username': os.environ.get('EMAIL_HOST_USER'),
-                'password': os.environ.get('EMAIL_HOST_PASSWORD'),
-                'use_tls':  True,
-            },
-        },
-    }
-else:
-    # Config del correo para desarrollo
-    MAILERS = {
-        'default': {
-            'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-        },
-    }
+MAILERS = {
+    'default': {
+        'BACKEND': 'anymail.backends.resend.EmailBackend',
+    },
+}
 
-DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'ventas@hunarpack.cl')
+ANYMAIL = {
+    'RESEND_API_KEY': os.environ.get('RESEND_API_KEY'),
+}
+
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'onboarding@resend.dev')
 
 # =====================================================================================
 # 10. CONFIGURACIÓN DE CLOUDINARY Y STORAGES
