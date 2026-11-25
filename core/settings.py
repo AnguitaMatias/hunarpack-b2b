@@ -22,12 +22,17 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 # Permitir todos los host (<- no olvidar modificar al dominio cuando lo compre)
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    'hunarpack.cl',
+    'www.hunarpack.cl',
+    'hunarpack-b2b.onrender.com',
+]
 
 # Dominios de confianza para CSRF (los formularios)
 CSRF_TRUSTED_ORIGINS = [
+    'https://hunarpack.cl',
+    'https://www.hunarpack.cl'
     'https://*.onrender.com',
-    'http://*.onrender.com',
 ]
 
 # =====================================================================================
