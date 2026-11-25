@@ -142,7 +142,7 @@ ANYMAIL = {
     'RESEND_API_KEY': os.environ.get('RESEND_API_KEY'),
 }
 
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'onboarding@resend.dev')
+DEFAULT_FROM_EMAIL = 'no-responder@notificaciones.hunarpack.cl'
 
 # =====================================================================================
 # 10. CONFIGURACIÓN DE CLOUDINARY Y STORAGES
