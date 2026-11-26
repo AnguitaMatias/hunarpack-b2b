@@ -31,7 +31,7 @@ ALLOWED_HOSTS = [
 # Dominios de confianza para CSRF (los formularios)
 CSRF_TRUSTED_ORIGINS = [
     'https://hunarpack.cl',
-    'https://www.hunarpack.cl'
+    'https://www.hunarpack.cl',
     'https://*.onrender.com',
 ]
 

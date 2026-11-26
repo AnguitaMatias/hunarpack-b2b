@@ -55,40 +55,38 @@
     <div class="row bg-white p-3 p-md-4 rounded shadow-sm border-0">
         {# === CARRUSEL DE IMAGENES === #}
         <div class="col-md-6 mb-4">
-            <div class="carousel slide rounded overflow-hidden shadow-sm" id="carruselProducto" data-bs-ride="false" style="background-color: #FAF1EA; border: 1px solid #E2DCD0;">
-                <div class="carousel-inner carousel-img-container">
-                    {% if producto.imagen %}
-                    <div class="carousel-item active h-100">
-                        <div class="d-flex w-100 h-100 align-items-center justify-content-center p-2">
-                            <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="d-block img-fluid" style="max-height: 100%; object-fit: contain;">
-                        </div>
-                    </div>
-                    {% else %}
-                    <div class="carousel-item active h-100">
-                        <div class="d-flex w-100 h-100 align-items-center justify-content-center">
-                            <i class="bi bi-box-seam display-1 text-secondary opacity-25"></i>
-                        </div>
-                    </div>
-                    {% endif %}
-    
-                    {# === IMAGENES ADICIONALES DE LAS VARIANTES === #}
+            {# Imagen principal de la variante seleccionada #}
+            <div class="rounded overflow-hidden shadow-sm p-3 mb-3 d-flex align-items-center justify-content-center" style="height: 320px; background-color: #FAF1EA; border: 1px solid #E2DCD0;">
+                <img src="" alt="{{ producto.nombre }} - HunarPack" id="img-principal-variante" class="img-fluid d-none" style="max-height: 100%; object-fit: contain;">
+                <div id="icono-sin-imagen" class="d-none">
+                    <i class="bi bi-box-seam display-1 text-secondary opacity-25"></i>
+                </div>
+            </div>
+            {# Carrusel con todas las imágenes extras #}
+            <div class="carousel slide rounded overflow-hidden shadow-sm" id="carruselProducto" data-bs-ride="false"
+                style="background-color: #FAF1EA; border: 1px solid #E2DCD0;">
+                <div class="carousel-inner" style="height: 140px;">
+                    {% with first_slide=True %}
                     {% for variante in variantes %}
                         {% for img in variante.imagenes_extra.all %}
-                        <div class="carousel-item h-100">
+                        <div class="carousel-item h-100 {% if forloop.parentloop.first and forloop.first %}active{% endif %}">
                             <div class="d-flex w-100 h-100 align-items-center justify-content-center p-2">
-                                <img src="{{ img.imagen.url }}" alt="Imagen extra" class="d-block img-fluid" style="max-height: 100%; object-fit: contain;">
+                                <img src="{{ img.imagen.url }}" alt="{{ producto.nombre }} - HunarPack" class="d-block img-fluid"
+                                    style="max-height: 100%; object-fit: contain;">
                             </div>
                         </div>
                         {% endfor %}
-                    {% endfor%}
+                    {% endfor %}
+                    {% endwith %}
                 </div>
-    
-                {# Controles para el carrusel Movil #}
+            
                 <button type="button" class="carousel-control-prev" data-bs-target="#carruselProducto" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon rounded-circle" aria-hidden="true" style="background-color: #7BA356; padding: 1rem;"></span>
+                    <span class="carousel-control-prev-icon rounded-circle" aria-hidden="true"
+                        style="background-color: #7BA356; width: 2rem; height: 2rem;"></span>
                 </button>
                 <button type="button" class="carousel-control-next" data-bs-target="#carruselProducto" data-bs-slide="next">
-                    <span class="carousel-control-next-icon rounded-circle" aria-hidden="true" style="background-color: #7BA356; padding: 1rem;"></span>
+                    <span class="carousel-control-next-icon rounded-circle" aria-hidden="true"
+                        style="background-color: #7BA356; width: 2rem; height: 2rem;"></span>
                 </button>
             </div>
         </div>
@@ -111,7 +109,9 @@
                 <div class="mb-3">
                     <select id="selector-variante" class="form-select form-select-lg mb-3 fw-bold shadow-sm fs-6" style="border: 2px solid #7BA356; color: #2F3E2A; background-color: #F4F1EA;">
                         {% for variante in variantes %}
-                        <option value="{{ variante.id }}" data-codigo="{{ variante.codigo }}"
+                        <option value="{{ variante.id }}"
+                            data-imagen="{% if variante.imagen_principal %}{{variante.imagen_principal.url}}{% elif producto.imagen %}{{ producto.imagen.url }}{% endif %}" 
+                            data-codigo="{{ variante.codigo }}"
                             data-unidades="{{ variante.unidades_por_caja }}"
                             data-dimensiones="{{ variante.dimensiones|default:'No especificadas' }}"
                             data-material="{{ variante.material|default:'No especificado' }}"
@@ -121,7 +121,8 @@
                             data-nota="{{ variante.nota|default:'Sin notas adicionales' }}"
                             data-stock="{{ variante.stock_actual }}" {% if variante.stock_actual <= 0 %}disabled{% endif %}>
                             {{ variante.nombre_variante }} - {{ variante.codigo }}
-                            {% if variante.stock_actual <= 0 %}Agotado{% endif %} </option>
+                            {% if variante.stock_actual <= 0 %}Agotado{% endif %} 
+                        </option>
                         {% endfor %}
                     </select>
                 </div>
@@ -183,11 +184,37 @@
     document.addEventListener('DOMContentLoaded', function() {
         const selector = document.getElementById('selector-variante');
         const btnAgregar = document.getElementById('btn-agregar-detalle');
-    
+        const imgPrincipal = document.getElementById('img-principal-variante');
+        const iconoSinImagen = document.getElementById('icono-sin-imagen');
+        const carruselEl = document.getElementById('carruselProducto');
+        
+        if (carruselEl) {
+            const slides = carruselEl.querySelectorAll('.carousel-item');
+            if (slides.length > 0 && !carruselEl.querySelector('.carousel-item.active')) {
+                slides[0].classList.add('active');
+            } else if (slides.length === 0) {
+                carruselEl.classList.add('d-none');
+            }
+        }
+
+        function actualizarImagenPrincipal(imagenUrl) {
+            if (!imgPrincipal || !iconoSinImagen) return;
+
+            if (imagenUrl) {
+                imgPrincipal.src = imagenUrl;
+                imgPrincipal.classList.remove('d-none');
+                iconoSinImagen.classList.add('d-none');
+            } else {
+                imgPrincipal.src = '';
+                imgPrincipal.classList.add('d-none');
+                iconoSinImagen.classList.remove('d-none');
+            }
+        }
+
         function actualizarSpecs() {
             const opcion = selector.options[selector.selectedIndex];
             if (!opcion) return;
-    
+
             document.getElementById('spec-codigo').innerText = opcion.dataset.codigo;
             document.getElementById('spec-unidades').innerText = opcion.dataset.unidades;
             document.getElementById('spec-dimensiones').innerText = opcion.dataset.dimensiones;
@@ -196,7 +223,9 @@
             document.getElementById('spec-microondas').innerText = opcion.dataset.microondas;
             document.getElementById('spec-ecologico').innerText = opcion.dataset.ecologico;
             document.getElementById('spec-nota').innerText = opcion.dataset.nota;
-    
+
+            actualizarImagenPrincipal(opcion.dataset.imagen);
+
             if (opcion.dataset.stock <= 0) {
                 btnAgregar.disabled = true;
                 btnAgregar.innerText = 'Sin Stock';
@@ -205,10 +234,10 @@
                 btnAgregar.innerHTML = '<i class="bi bi-cart-plus"></i> Agregar al Carrito';
             }
         }
-    
+
         actualizarSpecs();
         selector.addEventListener('change', actualizarSpecs);
-    
+
         btnAgregar.addEventListener('click', function() {
             const varianteId = selector.value;
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
